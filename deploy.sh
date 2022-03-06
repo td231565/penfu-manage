@@ -4,7 +4,7 @@
 set -e
 
 # build
-npm run build
+npm run build:prod
 
 # navigate into the build output directory
 cd dist
@@ -23,6 +23,6 @@ git commit -m 'deploy'
 # 1. ssh
 # git push -f git@github.com:<USERNAME>/<REPO>.git master:gh-pages
 # 2. https
-git push -f https://github.com/td231565/penfu.git master:gh-pages
+git push -f https://github.com/td231565/penfu-manage.git master:gh-pages
 
 cd -

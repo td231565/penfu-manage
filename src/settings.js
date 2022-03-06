@@ -1,6 +1,6 @@
 module.exports = {
 
-  title: 'Vue Admin Template',
+  title: 'Penfu-Management',
 
   /**
    * @type {boolean} true | false
