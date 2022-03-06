@@ -13,30 +13,46 @@
           {{ scope.$index }}
         </template>
       </el-table-column>
-      <el-table-column label="Title">
-        <template slot-scope="scope">
-          {{ scope.row.title }}
-        </template>
-      </el-table-column>
-      <el-table-column label="Author" width="110" align="center">
+      <el-table-column label="類別" width="110" align="center">
         <template slot-scope="scope">
           <span>{{ scope.row.author }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="Pageviews" width="110" align="center">
+      <el-table-column label="品名">
+        <template slot-scope="scope">
+          {{ scope.row.title }}
+        </template>
+      </el-table-column>
+      <el-table-column label="販售數量" width="110" align="center">
         <template slot-scope="scope">
           {{ scope.row.pageviews }}
         </template>
       </el-table-column>
-      <el-table-column class-name="status-col" label="Status" width="110" align="center">
+      <el-table-column label="價格" width="110" align="center">
+        <template slot-scope="scope">
+          {{ scope.row.pageviews }}
+        </template>
+      </el-table-column>
+      <el-table-column class-name="status-col" label="Status" width="" align="center">
         <template slot-scope="scope">
           <el-tag :type="scope.row.status | statusFilter">{{ scope.row.status }}</el-tag>
         </template>
       </el-table-column>
-      <el-table-column align="center" prop="created_at" label="Display_time" width="200">
+      <el-table-column align="center" prop="created_at" label="更新時間" width="200">
         <template slot-scope="scope">
           <i class="el-icon-time" />
           <span>{{ scope.row.display_time }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="上架" width="65">
+        <template slot-scope="scope">
+          <el-switch v-model="value1" />
+        </template>
+      </el-table-column>
+      <el-table-column label="操作" width="200">
+        <template slot-scope="scope">
+          <el-button type="text" size="small" @click="handleClick(scope.$index)">編輯</el-button>
+          <el-button type="text" size="small">刪除</el-button>
         </template>
       </el-table-column>
     </el-table>
