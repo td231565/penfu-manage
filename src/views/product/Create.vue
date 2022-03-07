@@ -60,22 +60,7 @@
         </el-upload>
       </el-form-item>
       <el-form-item label="商品描述">
-        <Editor
-          v-model="form.desc"
-          :init="{
-            height: 300,
-            menubar: false,
-            plugins: [
-              'advlist autolink lists link image charmap print preview anchor',
-              'searchreplace visualblocks code fullscreen',
-              'insertdatetime media table paste code help wordcount'
-            ],
-            toolbar:
-              'undo redo | formatselect | bold italic backcolor | \
-              alignleft aligncenter alignright alignjustify | \
-              bullist numlist outdent indent | removeformat | help',
-          }"
-        />
+        <Editor :content="form.desc" />
       </el-form-item>
       <el-form-item label="商品價格">
         <el-input-number v-model="form.price" placeholder="请输入商品價格" :min="0" />
@@ -99,7 +84,7 @@
 </template>
 
 <script>
-import Editor from '@tinymce/tinymce-vue'
+import Editor from '@/components/Editor'
 
 export default {
   name: 'ProductCreate',
