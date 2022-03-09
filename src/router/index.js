@@ -59,24 +59,24 @@ export const constantRoutes = [
     path: '/product',
     component: Layout,
     redirect: '/product/list',
-    name: 'ProductList',
+    name: 'Product',
     meta: { title: '商品管理', icon: 'el-icon-s-help' },
     children: [
       {
         path: 'list',
-        name: 'List',
+        name: 'ProductList',
         component: () => import('@/views/product/List'),
         meta: { title: '商品列表', icon: 'table' }
       },
       {
         path: 'create',
-        name: 'Create',
+        name: 'ProductCreate',
         component: () => import('@/views/product/Create'),
         meta: { title: '商品新增', icon: 'tree' }
       },
       {
         path: 'edit',
-        name: 'Edit',
+        name: 'ProductEdit',
         component: () => import('@/views/product/Create'),
         meta: { title: '商品編輯', icon: 'tree' },
         hidden: true

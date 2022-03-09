@@ -1,42 +1,48 @@
 <template>
-  <el-upload
-    class="avatar-uploader"
-    action="https://jsonplaceholder.typicode.com/posts/"
-    :show-file-list="isMultiple"
-    :file-list="isMultiple && fileList"
-    :on-success="(res, file) => { this.form.coverImage = URL.createObjectURL(file.raw) }"
-    :before-upload="beforeImageUpload"
-  >
-    <template v-if="!isMultiple">
-      <img v-if="form.coverImage" :src="form.coverImage" class="avatar">
-      <i v-else class="el-icon-plus avatar-uploader-icon" />
-    </template>
-    <template v-else>
-      <i slot="default" class="el-icon-plus avatar-uploader-icon" />
-      <div slot="file" slot-scope="{file}">
-        <img
-          class="el-upload-list__item-thumbnail avatar"
-          :src="file.url"
-          alt=""
-        >
-        <span class="el-upload-list__item-actions">
-          <span
-            class="el-upload-list__item-preview"
-            @click="handlePictureCardPreview(file)"
+  <div>
+    <el-upload
+      class="avatar-uploader"
+      action="https://jsonplaceholder.typicode.com/posts/"
+      :show-file-list="isMultiple"
+      :file-list="isMultiple ? fileList : []"
+      :on-success="(res, file) => { this.fileList[0] = URL.createObjectURL(file.raw) }"
+      :before-upload="beforeImageUpload"
+    >
+      <template v-if="!isMultiple">
+        <img v-if="fileList[0]" :src="fileList[0]" class="avatar">
+        <i v-else class="el-icon-plus avatar-uploader-icon" />
+      </template>
+      <template v-else>
+        <i slot="default" class="el-icon-plus avatar-uploader-icon" />
+        <div slot="file" slot-scope="{file}">
+          <img
+            class="el-upload-list__item-thumbnail avatar"
+            :src="file.url"
+            alt=""
           >
-            <i class="el-icon-zoom-in" />
+          <span class="el-upload-list__item-actions">
+            <span
+              class="el-upload-list__item-preview"
+              @click="handlePictureCardPreview(file)"
+            >
+              <i class="el-icon-zoom-in" />
+            </span>
+            <span
+              v-if="!disabled"
+              class="el-upload-list__item-delete"
+              @click="handleRemove(file)"
+            >
+              <i class="el-icon-delete" />
+            </span>
           </span>
-          <span
-            v-if="!disabled"
-            class="el-upload-list__item-delete"
-            @click="handleRemove(file)"
-          >
-            <i class="el-icon-delete" />
-          </span>
-        </span>
-      </div>
-    </template>
-  </el-upload>
+        </div>
+      </template>
+    </el-upload>
+    <!-- Image-Dialog -->
+    <el-dialog :visible.sync="dialogVisible">
+      <img width="100%" :src="dialogImageUrl" alt="">
+    </el-dialog>
+  </div>
 </template>
 
 <script>
@@ -46,11 +52,17 @@ export default {
     isMultiple: {
       type: Boolean,
       default: false
+    },
+    fileList: {
+      type: Array,
+      default: () => []
     }
   },
   data() {
     return {
-      fileList: []
+      // fileList: [],
+      dialogVisible: false,
+      dialogImageUrl: ''
     }
   },
   methods: {
@@ -81,6 +93,7 @@ export default {
 
 <style>
 .avatar-uploader .el-upload {
+  background-color: #fff;
   border: 1px dashed #d9d9d9;
   border-radius: 6px;
   cursor: pointer;
