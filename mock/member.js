@@ -3,17 +3,18 @@ const Mock = require('mockjs')
 const data = Mock.mock({
   'items|10': [{
     id: '@id',
-    title: '@sentence(10, 15)',
+    name: '@cname',
     'status|1': [true, false],
-    'author|1': ['票券', '伴手禮'],
-    display_time: '@datetime',
-    pageviews: '@integer(300, 5000)'
+    tel: '@string(9, 9)',
+    email: '@email',
+    birthday: '@date',
+    'sex|1': ['男', '女']
   }]
 })
 
 module.exports = [
   {
-    url: '/vue-admin-template/table/list',
+    url: '/vue-admin-template/member/list',
     type: 'get',
     response: config => {
       const items = data.items

@@ -85,6 +85,52 @@ export const constantRoutes = [
   },
 
   {
+    path: '/member',
+    component: Layout,
+    redirect: '/member/list',
+    name: 'Member',
+    meta: { title: '會員管理', icon: 'el-icon-s-help' },
+    children: [
+      {
+        path: 'list',
+        name: 'MemberList',
+        component: () => import('@/views/member/List'),
+        meta: { title: '會員列表', icon: 'table' },
+        hidden: true
+      }
+    ]
+  },
+
+  {
+    path: '/attraction',
+    component: Layout,
+    redirect: '/attraction/list',
+    name: 'Attraction',
+    meta: { title: '景點管理', icon: 'el-icon-s-help' },
+    children: [
+      {
+        path: 'list',
+        name: 'AttractionList',
+        component: () => import('@/views/attraction/List'),
+        meta: { title: '景點列表', icon: 'table' }
+      },
+      {
+        path: 'create',
+        name: 'AttractionCreate',
+        component: () => import('@/views/attraction/Create'),
+        meta: { title: '景點新增', icon: 'tree' }
+      },
+      {
+        path: 'edit',
+        name: 'AttractionEdit',
+        component: () => import('@/views/attraction/Create'),
+        meta: { title: '景點編輯', icon: 'tree' },
+        hidden: true
+      }
+    ]
+  },
+
+  {
     path: '/example',
     component: Layout,
     redirect: '/example/table',

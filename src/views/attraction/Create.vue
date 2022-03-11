@@ -1,38 +1,52 @@
 <template>
   <div class="app-container">
     <el-form ref="form" :model="form" label-width="120px">
-      <el-form-item label="商品類型">
-        <el-select v-model="form.type" placeholder="請選擇">
-          <el-option label="請選擇" :value="0" disabled />
-          <el-option label="票券" :value="1" />
-          <el-option label="伴手禮" :value="2" />
-        </el-select>
-      </el-form-item>
-      <el-form-item label="商品名稱">
+      <el-form-item label="景點名稱">
         <el-input v-model="form.title" placeholder="請輸入商品名稱" />
       </el-form-item>
-      <el-form-item label="商品副標">
+      <el-form-item label="景點副標">
         <el-input v-model="form.subTitle" placeholder="請輸入商品副標" />
       </el-form-item>
-      <el-form-item label="商品清單圖片">
+      <el-form-item label="內容標題">
+        <el-input v-model="form.subTitle" placeholder="請輸入商品副標" />
+      </el-form-item>
+      <el-form-item label="景點清單圖片">
         <ImageUpload />
         <p class="my-0">只能上傳jpg/png，大小不超過1MB，尺寸 1000px * 800px</p>
       </el-form-item>
-      <el-form-item label="商品內頁圖片">
+      <el-form-item label="景點內頁圖片">
         <ImageUpload is-multiple />
         <p class="my-0">只能上傳jpg/png，大小不超過1MB，尺寸 1000px * 800px</p>
       </el-form-item>
-      <el-form-item label="商品描述">
+      <el-form-item label="內容描述">
         <Editor :content="form.desc" />
       </el-form-item>
-      <el-form-item label="商品價格">
-        <el-input-number v-model="form.price" placeholder="请输入商品價格" :min="0" />
+      <el-form-item label="聯絡電話">
+        <Editor :content="form.desc" />
       </el-form-item>
-      <el-form-item label="使用日期">
-        <el-date-picker v-model="form.useDate" type="date" placeholder="請選擇日期" />
+      <el-form-item label="活動地址">
+        <Editor :content="form.desc" />
       </el-form-item>
-      <el-form-item label="商品庫存">
-        <el-input-number v-model="form.stock" placeholder="設定庫存量" :min="1" />
+      <el-form-item label="相關資訊">
+        <Editor :content="form.desc" />
+      </el-form-item>
+      <el-form-item label="景點地圖">
+        <div>
+          <el-input v-model="lat" placeholder="請輸入緯度" />
+          <el-input v-model="lng" placeholder="請輸入經度" />
+        </div>
+        <GmapMap
+          :center="center"
+          :zoom="14"
+          map-type-id="terrain"
+          style="width: 500px; height: 300px"
+        >
+          <GmapMarker
+            :position="center"
+            :clickable="true"
+            :draggable="false"
+          />
+        </GmapMap>
       </el-form-item>
       <el-form-item>
         <el-button type="primary" @click="onSubmit">新增</el-button>
@@ -47,10 +61,12 @@ import Editor from '@/components/Editor'
 import ImageUpload from '@/components/ImageUpload'
 
 export default {
-  name: 'ProductCreate',
+  name: 'AttractionCreate',
   components: { Editor, ImageUpload },
   data() {
     return {
+      lat: 22.445759,
+      lng: 120.473509,
       form: {
         type: 0,
         title: '',
@@ -63,6 +79,11 @@ export default {
         coverImage: '',
         imageList: []
       }
+    }
+  },
+  computed: {
+    center() {
+      return { lat: parseFloat(this.lat), lng: parseFloat(this.lng) }
     }
   },
   methods: {

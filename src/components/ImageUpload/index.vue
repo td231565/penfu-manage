@@ -2,10 +2,10 @@
   <div>
     <el-upload
       class="avatar-uploader"
-      action="https://jsonplaceholder.typicode.com/posts/"
+      action="https://pengfu-app.herokuapp.com/api/upload/"
       :show-file-list="isMultiple"
       :file-list="isMultiple ? fileList : []"
-      :on-success="(res, file) => { this.fileList[0] = URL.createObjectURL(file.raw) }"
+      :on-success="handleUploadSuccess"
       :before-upload="beforeImageUpload"
     >
       <template v-if="!isMultiple">
@@ -86,6 +86,11 @@ export default {
     handlePictureCardPreview(file) {
       this.dialogImageUrl = file.url
       this.dialogVisible = true
+    },
+    handleUploadSuccess(res, file) {
+      console.log(res)
+      console.log(file)
+      this.fileList[0] = URL.createObjectURL(file.raw)
     }
   }
 }
