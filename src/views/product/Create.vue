@@ -16,11 +16,9 @@
       </el-form-item>
       <el-form-item label="商品清單圖片">
         <ImageUpload />
-        <p class="my-0">只能上傳jpg/png，大小不超過1MB，尺寸 1000px * 800px</p>
       </el-form-item>
       <el-form-item label="商品內頁圖片">
         <ImageUpload is-multiple />
-        <p class="my-0">只能上傳jpg/png，大小不超過1MB，尺寸 1000px * 800px</p>
       </el-form-item>
       <el-form-item label="商品描述">
         <Editor :content="form.desc" />

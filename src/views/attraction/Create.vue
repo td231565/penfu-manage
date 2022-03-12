@@ -11,12 +11,10 @@
         <el-input v-model="form.subTitle" placeholder="請輸入商品副標" />
       </el-form-item>
       <el-form-item label="景點清單圖片">
-        <ImageUpload />
-        <p class="my-0">只能上傳jpg/png，大小不超過1MB，尺寸 1000px * 800px</p>
+        <ImageUpload :file-list="coverImage" />
       </el-form-item>
       <el-form-item label="景點內頁圖片">
-        <ImageUpload is-multiple />
-        <p class="my-0">只能上傳jpg/png，大小不超過1MB，尺寸 1000px * 800px</p>
+        <ImageUpload :file-list="contentImages" is-multiple />
       </el-form-item>
       <el-form-item label="內容描述">
         <Editor :content="form.desc" />
@@ -67,6 +65,8 @@ export default {
     return {
       lat: 22.445759,
       lng: 120.473509,
+      coverImage: [],
+      contentImages: [],
       form: {
         type: 0,
         title: '',
@@ -76,7 +76,7 @@ export default {
         useDate: '',
         stock: 0,
         desc: '',
-        coverImage: '',
+        coverImage: [],
         imageList: []
       }
     }
