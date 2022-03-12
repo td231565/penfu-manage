@@ -1,6 +1,7 @@
 <template>
   <TinyEditor
     v-model="editorContent"
+    api-key="mi512enaed3bnt81xitalewoqtf3nr5j0p9jlahxntts4m08"
     :init="initOption"
   />
 </template>
@@ -34,8 +35,7 @@ export default {
           'undo redo | formatselect | bold italic forecolor backcolor | \
           alignleft aligncenter alignright alignjustify | image | \
           bullist numlist outdent indent | removeformat',
-        images_upload_handler: this.uploadImage,
-        apiKey: 'mi512enaed3bnt81xitalewoqtf3nr5j0p9jlahxntts4m08'
+        images_upload_handler: this.uploadImage
       }
     }
   },

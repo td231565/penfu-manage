@@ -14,10 +14,10 @@
           </div>
         </div>
       </div>
-      <label v-if="fileList.length < countLimit" for="image-uploader" tabindex="0" class="avatar-uploader position-relative">
+      <label v-if="fileList.length < countLimit" :for="`image-uploader-${inputId}`" tabindex="0" class="avatar-uploader position-relative">
         <i class="el-icon-plus avatar-uploader-icon" />
         <input
-          id="image-uploader"
+          :id="`image-uploader-${inputId}`"
           type="file"
           name="image-uploader"
           accept=".jpg, .jpeg, .png"
@@ -60,6 +60,9 @@ export default {
   computed: {
     countLimit() {
       return this.isMultiple ? 3 : 1
+    },
+    inputId() {
+      return new Date().valueOf()
     }
   },
   methods: {
