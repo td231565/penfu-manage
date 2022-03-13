@@ -100,23 +100,20 @@
           </template>
         </el-table-column>
       </el-table>
-      <div class="d-flex justify-content-between align-items-center">
+      <div class="d-flex justify-content-between align-items-center mt-3">
         <div class="d-flex align-items-center">
           <el-checkbox
             v-model="isCheckAll"
             :indeterminate="isIndeterminate"
             @change="checkAllRow"
           >全選</el-checkbox>
-          <el-tooltip class="item ms-3" effect="dark" content="刪除" placement="top">
-            <el-button type="text" size="large">
-              <i class="el-icon-delete" />
-            </el-button>
-          </el-tooltip>
+          <el-button size="mini" class="ms-3" @click="showDisableConfirm">停權</el-button>
         </div>
         <el-pagination
           background
           layout="prev, pager, next"
           :total="50"
+          :current-page.sync="currentPage"
         />
       </div>
     </el-card>
@@ -130,15 +127,22 @@ export default {
   name: 'StoreList',
   data() {
     return {
-      list: null,
+      list: [],
       listLoading: true,
+      currentPage: 1,
       queryData: {
         id: '',
         name: '',
         status: '',
         tel: '',
         email: ''
-      }
+      },
+      isCheckAll: false
+    }
+  },
+  computed: {
+    isIndeterminate() {
+      return this.list.some(({ isCheck }) => isCheck) && !this.isCheckAll
     }
   },
   created() {
@@ -160,6 +164,29 @@ export default {
     },
     gotoCreatePage() {
       this.$router.push({ name: 'StoreCreate' })
+    },
+    checkAllRow() {
+      this.list.forEach(item => { item.isCheck = this.isCheckAll })
+    },
+    checkOneRow(status) {
+      this.isCheckAll = status && this.list.every(({ isCheck }) => isCheck)
+    },
+    showDisableConfirm() {
+      this.$confirm('This will permanently delete the file. Continue?', 'Warning', {
+        confirmButtonText: 'OK',
+        cancelButtonText: 'Cancel',
+        type: 'warning'
+      }).then(() => {
+        this.$message({
+          type: 'success',
+          message: 'Delete completed'
+        })
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: 'Delete canceled'
+        })
+      })
     }
   }
 }
