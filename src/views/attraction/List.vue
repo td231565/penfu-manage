@@ -2,8 +2,8 @@
   <div class="app-container">
     <el-card class="w-100 rouned-3 mb-3">
       <el-form inline :model="queryData">
-        <el-form-item label="商品 ID">
-          <el-input v-model="queryData.id" placeholder="Approved by" />
+        <el-form-item label="景點名稱">
+          <el-input v-model="queryData.id" placeholder="請輸入景點名稱" />
         </el-form-item>
         <el-form-item label="日期">
           <el-date-picker v-model="queryData.dateRange[0]" type="date" placeholder="起始日期" />
@@ -28,6 +28,11 @@
         fit
         highlight-current-row
       >
+        <el-table-column align="center" width="40">
+          <template slot-scope="scope">
+            <el-checkbox v-model="scope.row.isCheck" />
+          </template>
+        </el-table-column>
         <el-table-column align="center" label="景點 ID" width="95">
           <template slot-scope="scope">
             {{ scope.$index }}
@@ -80,7 +85,19 @@
           </template>
         </el-table-column>
       </el-table>
-      <div class="d-flex justify-content-center">
+      <div class="d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center">
+          <el-checkbox
+            v-model="isCheckAll"
+            :indeterminate="isIndeterminate"
+            @change="checkAllRow"
+          >全選</el-checkbox>
+          <el-tooltip class="item ms-3" effect="dark" content="刪除" placement="top">
+            <el-button type="text" size="large">
+              <i class="el-icon-delete" />
+            </el-button>
+          </el-tooltip>
+        </div>
         <el-pagination
           background
           layout="prev, pager, next"
@@ -114,8 +131,11 @@ export default {
   methods: {
     fetchData() {
       this.listLoading = true
-      getList().then(response => {
-        this.list = response.data.items
+      getList().then(res => {
+        this.list = res.data.items.map(item => {
+          item.isCheck = false
+          return item
+        })
         this.listLoading = false
       })
     },

@@ -3,26 +3,28 @@
     <el-card class="w-100 rouned-3 mb-3">
       <el-form inline :model="queryData">
         <div class="d-flex justify-content-between">
-          <el-form-item label="商品 ID">
-            <el-input v-model="queryData.id" placeholder="Approved by" />
-          </el-form-item>
-          <el-form-item label="名稱">
-            <el-input v-model="queryData.name" placeholder="Approved by" />
-          </el-form-item>
-          <el-form-item label="類別">
-            <el-select v-model="queryData.category" placeholder="Activity zone">
-              <el-option label="票券" :value="1" />
-              <el-option label="伴手禮" :value="2" />
-            </el-select>
-          </el-form-item>
-        </div>
-        <div class="d-flex justify-content-between">
-          <el-form-item label="日期">
-            <el-date-picker v-model="queryData.dateRange[0]" type="date" placeholder="起始日期" />
-            <i class="el-icon-minus mx-2" />
-            <el-date-picker v-model="queryData.dateRange[1]" type="date" placeholder="結束日期" />
-          </el-form-item>
-          <el-form-item>
+          <div class="w-75">
+            <div class="d-flex justify-content-between">
+              <el-form-item label="名稱">
+                <el-input v-model="queryData.name" placeholder="請輸入店家名稱" />
+              </el-form-item>
+              <el-form-item label="手機號碼">
+                <el-input v-model="queryData.mobile" placeholder="請輸入手機號碼" />
+              </el-form-item>
+            </div>
+            <div class="d-flex justify-content-between">
+              <el-form-item label="狀態">
+                <el-select v-model="queryData.status" placeholder="請選擇店家狀態">
+                  <el-option label="正常" :value="1" />
+                  <el-option label="已停權" :value="2" />
+                </el-select>
+              </el-form-item>
+              <el-form-item label="電話號碼">
+                <el-input v-model="queryData.phone" placeholder="請輸入電話號碼" />
+              </el-form-item>
+            </div>
+          </div>
+          <el-form-item class="d-flex justify-content-end align-items-end flex-shrink-1">
             <el-button type="primary" icon="el-icon-search" @click="onQuery">搜尋</el-button>
           </el-form-item>
         </div>
@@ -30,8 +32,8 @@
     </el-card>
     <el-card class="w-100 rouned-3">
       <div class="d-flex justify-content-between align-items-center mb-4">
-        <h5 class="my-0">商品列表</h5>
-        <el-button type="primary" icon="el-icon-plus" @click="gotoCreatePage">添加商品</el-button>
+        <h5 class="my-0">會員列表</h5>
+        <el-button type="primary" icon="el-icon-plus" @click="gotoCreatePage">新增店家</el-button>
       </div>
       <el-table
         v-loading="listLoading"
@@ -43,43 +45,44 @@
       >
         <el-table-column align="center" width="40">
           <template slot-scope="scope">
-            <el-checkbox v-model="scope.row.isCheck" @change="checkOneRow" />
+            <el-checkbox v-model="scope.row.isCheck" />
           </template>
         </el-table-column>
-        <el-table-column align="center" label="商品 ID" width="95">
+        <el-table-column align="center" label="店家 ID" width="95">
           <template slot-scope="scope">
             {{ scope.$index }}
           </template>
         </el-table-column>
-        <el-table-column label="類別" width="80" align="center">
+        <el-table-column label="名稱" width="100" align="center">
           <template slot-scope="scope">
-            <span>{{ scope.row.author }}</span>
+            {{ scope.row.name }}
           </template>
         </el-table-column>
-        <el-table-column label="名稱">
+        <el-table-column label="手機號碼" width="110" align="center">
           <template slot-scope="scope">
-            {{ scope.row.title }}
+            {{ scope.row.tel }}
           </template>
         </el-table-column>
-        <el-table-column label="販售數量" width="110" align="center">
+        <el-table-column label="電話" width="110" align="center">
           <template slot-scope="scope">
-            {{ scope.row.pageviews }}
+            {{ scope.row.tel }}
           </template>
         </el-table-column>
-        <el-table-column label="價格" width="110" align="center">
+        <el-table-column label="email" align="center">
           <template slot-scope="scope">
-            {{ scope.row.pageviews }}
+            {{ scope.row.email }}
           </template>
         </el-table-column>
-        <el-table-column align="center" prop="created_at" label="更新時間" width="200">
+        <el-table-column label="地址" width="110" align="center">
           <template slot-scope="scope">
-            <i class="el-icon-time" />
-            <span>{{ scope.row.display_time }}</span>
+            {{ scope.row.birthday }}
           </template>
         </el-table-column>
-        <el-table-column label="上架" width="65" align="center">
+        <el-table-column label="使用狀態" width="90" align="center">
           <template slot-scope="scope">
-            <el-switch v-model="scope.row.status" />
+            <el-tooltip class="item" effect="dark" :content="scope.row.status ? '正常' : '已停權'" placement="top">
+              <el-switch v-model="scope.row.status" />
+            </el-tooltip>
           </template>
         </el-table-column>
         <el-table-column label="操作" width="100">
@@ -89,11 +92,11 @@
                 <i class="el-icon-edit" />
               </el-button>
             </el-tooltip>
-            <el-tooltip class="item" effect="dark" content="刪除" placement="top">
+            <!-- <el-tooltip class="item" effect="dark" content="刪除" placement="top">
               <el-button type="text" size="large">
                 <i class="el-icon-delete" />
               </el-button>
-            </el-tooltip>
+            </el-tooltip> -->
           </template>
         </el-table-column>
       </el-table>
@@ -121,26 +124,21 @@
 </template>
 
 <script>
-import { getList } from '@/api/table'
+import { getList } from '@/api/member'
 
 export default {
-  name: 'ProductList',
+  name: 'StoreList',
   data() {
     return {
-      list: [],
+      list: null,
       listLoading: true,
       queryData: {
         id: '',
         name: '',
-        category: '',
-        dateRange: []
-      },
-      isCheckAll: false
-    }
-  },
-  computed: {
-    isIndeterminate() {
-      return this.list.some(({ isCheck }) => isCheck) && !this.isCheckAll
+        status: '',
+        tel: '',
+        email: ''
+      }
     }
   },
   created() {
@@ -161,13 +159,7 @@ export default {
 
     },
     gotoCreatePage() {
-      this.$router.push({ name: 'ProductCreate' })
-    },
-    checkAllRow() {
-      this.list.forEach(item => { item.isCheck = this.isCheckAll })
-    },
-    checkOneRow(status) {
-      this.isCheckAll = status && this.list.every(({ isCheck }) => isCheck)
+      this.$router.push({ name: 'StoreCreate' })
     }
   }
 }

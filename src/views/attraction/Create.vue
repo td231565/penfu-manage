@@ -101,6 +101,9 @@ export default {
         ],
         desc: [
           { required: true, message: '請輸入內容描述', trigger: 'blur' }
+        ],
+        coverImage: [
+          { type: 'array', required: true, message: '請上傳圖片', trigger: 'change' }
         ]
       }
     }

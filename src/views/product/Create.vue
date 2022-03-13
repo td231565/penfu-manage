@@ -15,10 +15,10 @@
         <el-input v-model="form.subTitle" placeholder="請輸入商品副標" />
       </el-form-item>
       <el-form-item label="商品清單圖片">
-        <ImageUpload />
+        <ImageUpload :file-list="coverImage" />
       </el-form-item>
       <el-form-item label="商品內頁圖片">
-        <ImageUpload is-multiple />
+        <ImageUpload :file-list="contentImages" is-multiple />
       </el-form-item>
       <el-form-item label="商品描述">
         <Editor :content="form.desc" />
@@ -58,8 +58,8 @@ export default {
         useDate: '',
         stock: 0,
         desc: '',
-        coverImage: '',
-        imageList: []
+        coverImage: [],
+        contentImages: []
       }
     }
   },
