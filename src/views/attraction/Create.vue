@@ -7,26 +7,26 @@
       <el-form-item label="景點副標" prop="subTitle">
         <el-input v-model="form.subTitle" placeholder="請輸入景點副標" />
       </el-form-item>
-      <el-form-item label="內容標題" prop="innerTitle">
-        <el-input v-model="form.innerTitle" placeholder="請輸入內容標題" />
+      <el-form-item label="內容標題" prop="contentTitle">
+        <el-input v-model="form.contentTitle" placeholder="請輸入內容標題" />
       </el-form-item>
-      <el-form-item label="景點清單圖片" prop="coverImage">
-        <ImageUpload :file-list="form.coverImage" />
+      <el-form-item label="景點清單圖片" prop="listImage">
+        <ImageUpload :file-list="form.listImage" />
       </el-form-item>
-      <el-form-item label="景點內頁圖片" prop="contentImages">
-        <ImageUpload :file-list="form.contentImages" is-multiple />
+      <el-form-item label="景點內頁圖片" prop="contentImage">
+        <ImageUpload :file-list="form.contentImage" is-multiple />
       </el-form-item>
-      <el-form-item label="內容描述" prop="desc">
-        <Editor :content="form.desc" @on-change="setInputValue('desc', $event)" />
+      <el-form-item label="內容描述" prop="contentArticle">
+        <Editor :content="form.contentArticle" @on-change="setInputValue('contentArticle', $event)" />
       </el-form-item>
-      <el-form-item label="聯絡電話" prop="tel">
-        <Editor :content="form.tel" @on-change="setInputValue('tel', $event)" />
+      <el-form-item label="聯絡電話" prop="contactArticle">
+        <Editor :content="form.contactArticle" @on-change="setInputValue('contactArticle', $event)" />
       </el-form-item>
-      <el-form-item label="活動地址" prop="address">
+      <!-- <el-form-item label="活動地址" prop="address">
         <Editor :content="form.address" @on-change="setInputValue('address', $event)" />
-      </el-form-item>
-      <el-form-item label="相關資訊" prop="info">
-        <Editor :content="form.info" @on-change="setInputValue('info', $event)" />
+      </el-form-item> -->
+      <el-form-item label="相關資訊" prop="relatedArticle">
+        <Editor :content="form.relatedArticle" @on-change="setInputValue('relatedArticle', $event)" />
       </el-form-item>
       <el-form-item label="景點地圖">
         <el-col :span="2" class="text-center">
@@ -34,7 +34,7 @@
         </el-col>
         <el-col :span="10">
           <el-form-item prop="lat">
-            <el-input v-model="form.location.lat" placeholder="請輸入緯度" />
+            <el-input v-model="form.map.lat" placeholder="請輸入緯度" />
           </el-form-item>
         </el-col>
         <el-col :span="2" class="text-center">
@@ -42,8 +42,14 @@
         </el-col>
         <el-col :span="10">
           <el-form-item prop="lat">
-            <el-input v-model="form.location.lng" placeholder="請輸入經度" />
+            <el-input v-model="form.map.lng" placeholder="請輸入經度" />
           </el-form-item>
+        </el-col>
+        <el-col :span="12" class="mt-3">
+          <el-input ref="placeQuery" v-model="placeQuery" placeholder="請輸入地址搜尋" @keyup.enter="getLatLngByQuery" />
+        </el-col>
+        <el-col :span="2" class="mt-3 ms-3">
+          <el-button @click="getLatLngByQuery">搜尋</el-button>
         </el-col>
         <el-col :span="24" class="mt-3">
           <GmapMap
@@ -71,23 +77,24 @@
 <script>
 import Editor from '@/components/Editor'
 import ImageUpload from '@/components/ImageUpload'
+import { gmapApi } from 'vue2-google-maps'
 
 export default {
   name: 'AttractionCreate',
   components: { Editor, ImageUpload },
   data() {
     return {
+      placeQuery: '',
       form: {
-        coverImage: [],
-        contentImages: [],
+        listImage: [],
+        contentImage: [],
         title: '',
         subTitle: '',
-        innerTitle: '',
-        desc: '',
-        tel: '',
-        address: '',
-        info: '',
-        location: { lat: 22.445759, lng: 120.473509 }
+        contentTitle: '',
+        contentArticle: '',
+        contactArticle: '',
+        relatedArticle: '',
+        map: { lat: 22.445759, lng: 120.473509 }
       },
       formRules: {
         title: [
@@ -96,13 +103,13 @@ export default {
         subTitle: [
           { required: true, message: '請輸入景點副標', trigger: 'blur' }
         ],
-        innerTitle: [
+        contentTitle: [
           { required: true, message: '請輸入內容標題', trigger: 'blur' }
         ],
-        desc: [
+        contentArticle: [
           { required: true, message: '請輸入內容描述', trigger: 'blur' }
         ],
-        coverImage: [
+        listImage: [
           { type: 'array', required: true, message: '請上傳圖片', trigger: 'change' }
         ]
       }
@@ -110,7 +117,7 @@ export default {
   },
   computed: {
     center() {
-      const { lat, lng } = this.form.location
+      const { lat, lng } = this.form.map
       return { lat: parseFloat(lat), lng: parseFloat(lng) }
     }
   },
@@ -127,6 +134,18 @@ export default {
     },
     setInputValue(key, value) {
       this.form[key] = value
+    },
+    getLatLngByQuery() {
+      const google = gmapApi()
+      const geocoder = new google.maps.Geocoder()
+      geocoder.geocode({ 'address': this.placeQuery }, (res, status) => {
+        if (status === 'OK') {
+          const { lat, lng } = res[0].geometry.location
+          this.form.map = { lat: lat(), lng: lng() }
+        } else {
+          this.$message.error('無法辨識輸入的地址或關鍵字')
+        }
+      })
     }
   }
 }

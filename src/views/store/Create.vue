@@ -60,11 +60,11 @@
       <el-form-item label="匯款帳號" prop="innerTitle">
         <el-input v-model="form.innerTitle" placeholder="請輸入匯款帳號" />
       </el-form-item>
-      <el-form-item label="店家圖片" prop="coverImage">
-        <ImageUpload :file-list="form.coverImage" />
+      <el-form-item label="店家圖片" prop="listImage">
+        <ImageUpload :file-list="form.listImage" />
       </el-form-item>
-      <!-- <el-form-item label="景點內頁圖片" prop="contentImages">
-        <ImageUpload :file-list="form.contentImages" is-multiple />
+      <!-- <el-form-item label="景點內頁圖片" prop="contentImage">
+        <ImageUpload :file-list="form.contentImage" is-multiple />
       </el-form-item> -->
       <el-form-item>
         <el-button type="primary" @click="onSubmit">新增</el-button>
@@ -83,8 +83,8 @@ export default {
   data() {
     return {
       form: {
-        coverImage: [],
-        contentImages: [],
+        listImage: [],
+        contentImage: [],
         title: '',
         subTitle: '',
         innerTitle: '',
@@ -107,7 +107,7 @@ export default {
         desc: [
           { required: true, message: '請輸入內容描述', trigger: 'blur' }
         ],
-        coverImage: [
+        listImage: [
           { type: 'array', required: true, message: '請上傳圖片', trigger: 'change' }
         ]
       }

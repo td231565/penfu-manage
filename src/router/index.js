@@ -131,6 +131,23 @@ export const constantRoutes = [
   },
 
   {
+    path: '/sell',
+    component: Layout,
+    redirect: '/sell/list',
+    name: 'Sell',
+    meta: { title: '銷售管理', icon: 'el-icon-s-help' },
+    children: [
+      {
+        path: 'list',
+        name: 'SellList',
+        component: () => import('@/views/sell/List'),
+        meta: { title: '銷售列表', icon: 'table' },
+        hidden: true
+      }
+    ]
+  },
+
+  {
     path: '/attraction',
     component: Layout,
     redirect: '/attraction/list',

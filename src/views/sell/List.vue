@@ -30,8 +30,7 @@
     </el-card>
     <el-card class="w-100 rouned-3">
       <div class="d-flex justify-content-between align-items-center mb-4">
-        <h5 class="my-0">商品列表</h5>
-        <el-button type="primary" icon="el-icon-plus" @click="gotoCreatePage">添加商品</el-button>
+        <p>日期區間：2022-01-01 ~ 2022-01-31</p>
       </div>
       <el-table
         v-loading="listLoading"
@@ -61,39 +60,21 @@
             {{ scope.row.title }}
           </template>
         </el-table-column>
-        <el-table-column label="販售數量" width="110" align="center">
+        <el-table-column label="銷售數量" width="110" align="center">
           <template slot-scope="scope">
             {{ scope.row.pageviews }}
           </template>
         </el-table-column>
-        <el-table-column label="價格" width="110" align="center">
+        <el-table-column label="銷售總計" width="110" align="center">
           <template slot-scope="scope">
             {{ scope.row.pageviews }}
           </template>
         </el-table-column>
-        <el-table-column align="center" prop="created_at" label="更新時間" width="200">
+        <el-table-column label="操作" width="120" align="center">
           <template slot-scope="scope">
-            <i class="el-icon-time" />
-            <span>{{ scope.row.display_time }}</span>
-          </template>
-        </el-table-column>
-        <el-table-column label="上架" width="65" align="center">
-          <template slot-scope="scope">
-            <el-switch v-model="scope.row.status" />
-          </template>
-        </el-table-column>
-        <el-table-column label="操作" width="100">
-          <template slot-scope="scope">
-            <el-tooltip class="item" effect="dark" content="編輯" placement="top">
-              <el-button type="text" size="large" @click="handleClick(scope.$index)">
-                <i class="el-icon-edit" />
-              </el-button>
-            </el-tooltip>
-            <el-tooltip class="item" effect="dark" content="刪除" placement="top">
-              <el-button type="text" size="large" @click="showRemoveConfirm">
-                <i class="el-icon-delete" />
-              </el-button>
-            </el-tooltip>
+            <el-button @click="handleClick(scope.$index)">
+              查詢明細
+            </el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -121,7 +102,7 @@
 import { getList } from '@/api/table'
 
 export default {
-  name: 'ProductList',
+  name: 'SellList',
   data() {
     return {
       list: [],

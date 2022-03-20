@@ -92,7 +92,7 @@
             :indeterminate="isIndeterminate"
             @change="checkAllRow"
           >全選</el-checkbox>
-          <el-button size="mini" class="ms-3" @click="showRemoveConfirm">刪除</el-button>
+          <el-button type="danger" plain class="ms-3" @click="showRemoveConfirm">刪除</el-button>
         </div>
         <el-pagination
           background

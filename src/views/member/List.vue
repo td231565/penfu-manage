@@ -50,7 +50,7 @@
         </el-table-column>
         <el-table-column align="center" label="會員 ID" width="95">
           <template slot-scope="scope">
-            {{ scope.$index }}
+            {{ scope.row.id }}
           </template>
         </el-table-column>
         <el-table-column label="名稱" width="100" align="center">
@@ -93,7 +93,7 @@
             :indeterminate="isIndeterminate"
             @change="checkAllRow"
           >全選</el-checkbox>
-          <el-button size="mini" class="ms-3" @click="showDisableConfirm">停權</el-button>
+          <el-button type="danger" plain class="ms-3" @click="showDisableConfirm">停權</el-button>
         </div>
         <el-pagination
           background
