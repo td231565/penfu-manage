@@ -1,5 +1,5 @@
 <template>
-  <div class="app-container">
+  <div v-loading.fullscreen.lock="isLoading" class="app-container">
     <el-form ref="form" :model="form" :rules="formRules" label-width="120px">
       <el-form-item label="景點名稱" prop="title">
         <el-input v-model="form.title" placeholder="請輸入景點名稱" />
@@ -19,7 +19,7 @@
       <el-form-item label="內容描述" prop="contentArticle">
         <Editor :content="form.contentArticle" @on-change="setInputValue('contentArticle', $event)" />
       </el-form-item>
-      <el-form-item label="聯絡電話" prop="contactArticle">
+      <el-form-item label="聯繫方式" prop="contactArticle">
         <Editor :content="form.contactArticle" @on-change="setInputValue('contactArticle', $event)" />
       </el-form-item>
       <!-- <el-form-item label="活動地址" prop="address">
@@ -46,7 +46,7 @@
           </el-form-item>
         </el-col>
         <el-col :span="12" class="mt-3">
-          <el-input ref="placeQuery" v-model="placeQuery" placeholder="請輸入地址搜尋" @keyup.enter="getLatLngByQuery" />
+          <el-input ref="placeQuery" v-model="placeQuery" placeholder="請輸入地址搜尋" @keyup.native.enter="getLatLngByQuery" />
         </el-col>
         <el-col :span="2" class="mt-3 ms-3">
           <el-button @click="getLatLngByQuery">搜尋</el-button>
@@ -67,8 +67,8 @@
         </el-col>
       </el-form-item>
       <el-form-item>
-        <el-button type="primary" @click="onSubmit">新增</el-button>
-        <el-button>取消</el-button>
+        <el-button type="primary" @click="onSubmit">{{ isCreate ? '新增' : '儲存' }}</el-button>
+        <el-button @click="gotoList">取消</el-button>
       </el-form-item>
     </el-form>
   </div>
@@ -78,22 +78,25 @@
 import Editor from '@/components/Editor'
 import ImageUpload from '@/components/ImageUpload'
 import { gmapApi } from 'vue2-google-maps'
+import { getDetail, postDetail, patchDetail } from '@/api/attraction'
 
 export default {
   name: 'AttractionCreate',
   components: { Editor, ImageUpload },
   data() {
     return {
+      isLoading: false,
       placeQuery: '',
       form: {
-        listImage: [],
-        contentImage: [],
         title: '',
         subTitle: '',
         contentTitle: '',
         contentArticle: '',
         contactArticle: '',
         relatedArticle: '',
+        listImage: [],
+        contentImage: [],
+        status: 1,
         map: { lat: 22.445759, lng: 120.473509 }
       },
       formRules: {
@@ -108,11 +111,12 @@ export default {
         ],
         contentArticle: [
           { required: true, message: '請輸入內容描述', trigger: 'blur' }
-        ],
-        listImage: [
-          { type: 'array', required: true, message: '請上傳圖片', trigger: 'change' }
         ]
-      }
+        // listImage: [
+        //   { type: 'array', required: true, message: '請上傳圖片', trigger: 'change' }
+        // ]
+      },
+      isCreate: false
     }
   },
   computed: {
@@ -121,11 +125,30 @@ export default {
       return { lat: parseFloat(lat), lng: parseFloat(lng) }
     }
   },
+  created() {
+    const id = this.$route.params.id
+    this.isCreate = !id
+    if (id) {
+      this.getAttractionDetail(id)
+    }
+  },
   methods: {
+    getAttractionDetail(id) {
+      this.isLoading = true
+      getDetail(id).then(data => {
+        this.form = data.attraction
+        this.isLoading = false
+      }).catch(() => { this.isLoading = false })
+    },
     onSubmit() {
       this.$refs.form.validate(valid => {
         if (valid) {
-          console.log(this.form)
+          this.isLoading = true
+          const submitApi = this.isCreate ? postDetail : patchDetail
+          const id = this.$route.params.id
+          submitApi(this.form, id).then(() => {
+            this.$router.push({ name: 'AttractionList' })
+          }).catch(() => { this.isLoading = false })
         } else {
           this.$message.error('請確認必填欄位輸入完整')
           return false
@@ -145,6 +168,11 @@ export default {
         } else {
           this.$message.error('無法辨識輸入的地址或關鍵字')
         }
+      })
+    },
+    gotoList() {
+      this.$confirm('確定返回列表嗎？資料將不會儲存').then(() => {
+        this.$router.push({ name: 'AttractionList' })
       })
     }
   }

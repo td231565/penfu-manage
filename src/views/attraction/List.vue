@@ -2,16 +2,16 @@
   <div class="app-container">
     <el-card class="w-100 rouned-3 mb-3">
       <el-form inline :model="queryData">
-        <el-form-item label="景點名稱">
-          <el-input v-model="queryData.id" placeholder="請輸入景點名稱" />
+        <el-form-item label="名稱">
+          <el-input v-model="queryData.search" placeholder="請輸入景點名稱" />
         </el-form-item>
-        <el-form-item label="日期">
-          <el-date-picker v-model="queryData.dateRange[0]" type="date" placeholder="起始日期" />
+        <el-form-item label="上架時間">
+          <el-date-picker v-model="queryData.startDate" type="date" placeholder="起始日期" />
           <i class="el-icon-minus mx-2" />
-          <el-date-picker v-model="queryData.dateRange[1]" type="date" placeholder="結束日期" />
+          <el-date-picker v-model="queryData.endDate" type="date" placeholder="結束日期" />
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" icon="el-icon-search" @click="onQuery">搜尋</el-button>
+          <el-button type="primary" icon="el-icon-search" @click="fetchData(1, page.size)">搜尋</el-button>
         </el-form-item>
       </el-form>
     </el-card>
@@ -33,52 +33,47 @@
             <el-checkbox v-model="scope.row.isCheck" />
           </template>
         </el-table-column>
-        <el-table-column align="center" label="景點 ID" width="95">
+        <el-table-column align="center" label="景點 ID" width="80">
           <template slot-scope="scope">
-            {{ scope.$index }}
+            {{ scope.row.id }}
           </template>
         </el-table-column>
-        <el-table-column label="名稱">
+        <el-table-column label="名稱" align="center">
           <template slot-scope="scope">
             {{ scope.row.title }}
           </template>
         </el-table-column>
-        <el-table-column label="副標" width="110" align="center">
+        <el-table-column label="副標" align="center">
           <template slot-scope="scope">
-            {{ scope.row.pageviews }}
+            {{ scope.row.subtitle }}
           </template>
         </el-table-column>
-        <el-table-column label="價格" width="110" align="center">
-          <template slot-scope="scope">
-            {{ scope.row.pageviews }}
-          </template>
-        </el-table-column>
-        <el-table-column align="center" prop="created_at" label="上架時間" width="200">
+        <el-table-column align="center" prop="created_at" label="上架時間" width="170">
           <template slot-scope="scope">
             <i class="el-icon-time" />
-            <span>{{ scope.row.display_time }}</span>
+            <span>{{ showDate(scope.row.create_time) }}</span>
           </template>
         </el-table-column>
-        <el-table-column align="center" prop="updated_at" label="更新時間" width="200">
+        <el-table-column align="center" prop="updated_at" label="更新時間" width="170">
           <template slot-scope="scope">
             <i class="el-icon-time" />
-            <span>{{ scope.row.display_time }}</span>
+            <span>{{ showDate(scope.row.update_time) }}</span>
           </template>
         </el-table-column>
         <el-table-column label="上架" width="65" align="center">
           <template slot-scope="scope">
-            <el-switch v-model="scope.row.status" />
+            <el-switch :value="checkStatus(scope.row.status)" @change="switchStatus($event, scope.row.id)" />
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="100">
+        <el-table-column label="操作" width="75" align="center">
           <template slot-scope="scope">
             <el-tooltip class="item" effect="dark" content="編輯" placement="top">
-              <el-button type="text" size="large" @click="handleClick(scope.$index)">
+              <el-button type="text" size="large" @click="gotoEditPage(scope.row.id)">
                 <i class="el-icon-edit" />
               </el-button>
             </el-tooltip>
             <el-tooltip class="item" effect="dark" content="刪除" placement="top">
-              <el-button type="text" size="large" @click="showRemoveConfirm">
+              <el-button type="text" size="large" @click="showRemoveConfirm([scope.row.id])">
                 <i class="el-icon-delete" />
               </el-button>
             </el-tooltip>
@@ -92,13 +87,16 @@
             :indeterminate="isIndeterminate"
             @change="checkAllRow"
           >全選</el-checkbox>
-          <el-button type="danger" plain class="ms-3" @click="showRemoveConfirm">刪除</el-button>
+          <el-button type="danger" plain class="ms-3" @click="showRemoveConfirm(checkedIdList)">刪除</el-button>
         </div>
         <el-pagination
-          background
-          layout="prev, pager, next"
-          :total="50"
-          :current-page.sync="currentPage"
+          :current-page.sync="page.current"
+          :page-sizes="[10, 30, 50, 100]"
+          :page-size="page.size"
+          layout="total, sizes, prev, pager, next, jumper"
+          :total="page.total"
+          @current-change="fetchData($event, page.size)"
+          @size-change="fetchData(1, $event)"
         />
       </div>
     </el-card>
@@ -106,7 +104,7 @@
 </template>
 
 <script>
-import { getList } from '@/api/table'
+import { getList, deleteItems, patchDetail } from '@/api/attraction'
 
 export default {
   name: 'AttractionList',
@@ -114,12 +112,15 @@ export default {
     return {
       list: [],
       listLoading: true,
-      currentPage: 1,
+      page: {
+        current: 1,
+        size: 10,
+        total: 0
+      },
       queryData: {
-        id: '',
-        name: '',
-        category: '',
-        dateRange: []
+        search: '',
+        startDate: '',
+        endDate: ''
       },
       isCheckAll: false
     }
@@ -127,27 +128,34 @@ export default {
   computed: {
     isIndeterminate() {
       return this.list.some(({ isCheck }) => isCheck) && !this.isCheckAll
+    },
+    checkedIdList() {
+      return this.list.filter(({ isCheck }) => isCheck).map(({ id }) => id)
     }
   },
   created() {
-    this.fetchData()
+    this.fetchData(1, 10)
   },
   methods: {
-    fetchData() {
+    fetchData(page, numberPerPage) {
       this.listLoading = true
-      getList().then(res => {
-        this.list = res.data.items.map(item => {
+      getList(page, numberPerPage, this.queryData).then(data => {
+        this.list = data.attraction.map(item => {
           item.isCheck = false
           return item
         })
+        this.page.current = page
+        this.page.total = data.total
         this.listLoading = false
+      }).catch(err => {
+        console.log(err)
       })
-    },
-    onQuery() {
-
     },
     gotoCreatePage() {
       this.$router.push({ name: 'AttractionCreate' })
+    },
+    gotoEditPage(id) {
+      this.$router.push({ name: 'AttractionEdit', params: { id }})
     },
     checkAllRow() {
       this.list.forEach(item => { item.isCheck = this.isCheckAll })
@@ -155,22 +163,37 @@ export default {
     checkOneRow(status) {
       this.isCheckAll = status && this.list.every(({ isCheck }) => isCheck)
     },
-    showRemoveConfirm() {
-      this.$confirm('This will permanently delete the file. Continue?', 'Warning', {
-        confirmButtonText: 'OK',
-        cancelButtonText: 'Cancel',
+    showRemoveConfirm(ids) {
+      this.$confirm('確定要刪除選擇的景點嗎？', 'Warning', {
+        confirmButtonText: '確定',
+        cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        this.$message({
-          type: 'success',
-          message: 'Delete completed'
+        deleteItems(ids).then(() => {
+          this.$message({ type: 'success', message: '刪除成功' })
+          // 如果分頁內只有一筆，且不是第一頁，就拿上一頁的資料
+          const { current, size, total } = this.page
+          if (current === 1) {
+            this.fetchData(1, size)
+          } else if (total % size === 1 && current === Math.round(total / size)) {
+            this.fetchData(current - 1, size)
+          } else {
+            this.fetchData(current, size)
+          }
         })
-      }).catch(() => {
-        this.$message({
-          type: 'info',
-          message: 'Delete canceled'
-        })
-      })
+      }).catch(() => {})
+    },
+    showDate(date) {
+      return date.replace('T', ' ').slice(0, -3)
+    },
+    switchStatus(status, id) {
+      console.log(status)
+      patchDetail({ status: status ? 1 : 0 }, id).then(data => {
+        this.list.find(item => item.id === id).status = status ? 1 : 0
+      }).catch(() => {})
+    },
+    checkStatus(statusType) {
+      return statusType === 1
     }
   }
 }

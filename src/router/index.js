@@ -167,7 +167,7 @@ export const constantRoutes = [
         meta: { title: '景點新增', icon: 'tree' }
       },
       {
-        path: 'edit',
+        path: 'edit/:id',
         name: 'AttractionEdit',
         component: () => import('@/views/attraction/Create'),
         meta: { title: '景點編輯', icon: 'tree' },

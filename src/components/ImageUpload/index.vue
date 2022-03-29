@@ -2,10 +2,10 @@
   <div>
     <div class="d-flex">
       <div v-if="fileList.length" class="d-flex">
-        <div v-for="(file, idx) in fileList" :key="file.id" class="upload-block avatar d-flex justify-content-center align-items-center position-relative me-3">
+        <div v-for="(file, idx) in fileList" :key="file.uuid" class="upload-block avatar d-flex justify-content-center align-items-center position-relative me-3">
           <img
             class="avatar position-absolute top-0 start-0"
-            :src="file.url"
+            :src="file.link"
             alt=""
           >
           <div class="avatar hide justify-content-center align-items-center position-absolute top-0 start-0" style="background-color: rgba(0,0,0,0.6);">
@@ -36,7 +36,7 @@
 </template>
 
 <script>
-import axios from 'axios'
+import { uploadImage } from '@/api/upload'
 
 export default {
   name: 'ImageUpload',
@@ -86,8 +86,7 @@ export default {
           const { width, height } = img
           if (width > 1000 || height > 800) {
             this.$message.error('圖片尺寸超過限制')
-          }
-          if (isPic && isSizeValid && isCountLessThanLimit) {
+          } else if (isPic && isSizeValid && isCountLessThanLimit) {
             this.uploadImage(file)
           }
         }
@@ -110,18 +109,12 @@ export default {
       })
       const formData = new FormData()
       formData.append('image', file)
-      axios({
-        method: 'POST',
-        url: 'https://pengfu-app.herokuapp.com/api/upload/',
-        data: formData,
-        headers: { 'Content-type': 'multipart/form-data' }
-      }).then(res => {
-        // console.log(res.data)
-        const { image_link } = res.data
+      uploadImage(formData).then(data => {
         const obj = {
           name: file.name,
-          url: image_link,
-          id: new Date().valueOf()
+          link: data.image_link,
+          category: this.isMultiple ? 'Content' : 'List',
+          uuid: new Date().valueOf()
         }
         if (this.fileList.length < this.countLimit) {
           this.fileList.push(obj)

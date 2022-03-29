@@ -8,8 +8,7 @@
 
 <script>
 import TinyEditor from '@tinymce/tinymce-vue'
-// import { uploadImage } from '@/api/upload'
-import axios from 'axios'
+import { uploadImage } from '@/api/upload'
 
 export default {
   name: 'Editor',
@@ -34,7 +33,7 @@ export default {
         toolbar:
           'undo redo | formatselect | bold italic forecolor backcolor | \
           alignleft aligncenter alignright alignjustify | image | \
-          bullist numlist outdent indent | removeformat',
+          bullist numlist outdent indent | removeformat | code',
         images_upload_handler: this.uploadImage
       }
     }
@@ -42,22 +41,20 @@ export default {
   watch: {
     editorContent(val) {
       this.$emit('on-change', val)
+    },
+    content: {
+      immediate: true,
+      handler(val) {
+        this.editorContent = val
+      }
     }
-  },
-  created() {
-    this.editorContent = this.content
   },
   methods: {
     uploadImage(blob, success, failure, progress) {
       const formData = new FormData()
       formData.append('image', blob.blob(), blob.filename())
-      axios({
-        method: 'POST',
-        url: 'https://pengfu-app.herokuapp.com/api/upload/',
-        data: formData,
-        headers: { 'Content-type': 'multipart/form-data' }
-      }).then(res => {
-        success(res.data.image_link)
+      uploadImage(formData).then(data => {
+        success(data.image_link)
       }).catch(err => {
         console.log(err)
         failure('image upload error')
