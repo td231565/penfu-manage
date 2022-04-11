@@ -169,25 +169,28 @@ export default {
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
+        this.listLoading = true
         deleteItems(ids).then(() => {
           this.$message({ type: 'success', message: '刪除成功' })
           // 如果分頁內只有一筆，且不是第一頁，就拿上一頁的資料
           const { current, size, total } = this.page
           if (current === 1) {
             this.fetchData(1, size)
-          } else if (total % size === 1 && current === Math.round(total / size)) {
+          } else if ((total - ids.length) % size === 0 && current !== 1) {
             this.fetchData(current - 1, size)
           } else {
             this.fetchData(current, size)
           }
+          this.listLoading = false
         })
-      }).catch(() => {})
+      }).catch(() => {
+        this.listLoading = false
+      })
     },
     showDate(date) {
       return date.replace('T', ' ').slice(0, -3)
     },
     switchStatus(status, id) {
-      console.log(status)
       patchDetail({ status: status ? 1 : 0 }, id).then(data => {
         this.list.find(item => item.id === id).status = status ? 1 : 0
       }).catch(() => {})

@@ -147,6 +147,7 @@ export default {
           const submitApi = this.isCreate ? postDetail : patchDetail
           const id = this.$route.params.id
           submitApi(this.form, id).then(() => {
+            this.$message({ type: 'success', message: '儲存成功' })
             this.$router.push({ name: 'AttractionList' })
           }).catch(() => { this.isLoading = false })
         } else {

@@ -29,6 +29,13 @@
       <template v-if="form.category === 1">
         <el-form-item label="使用日期">
           <el-date-picker v-model="form.useDate" type="date" placeholder="請選擇日期" />
+          <el-calendar>
+            <template #dateCell="{date, data}">
+              <p :class="data.isSelected ? 'is-selected' : ''">
+                {{ data.day.split('-').slice(1).join('-') }} {{ data.isSelected ? '✔️' : '' }}
+              </p>
+            </template>
+          </el-calendar>
         </el-form-item>
         <el-form-item label="商品庫存">
           <el-input-number v-model="form.inStockNumber" placeholder="設定庫存量" :min="1" />
@@ -58,7 +65,7 @@ export default {
   data() {
     return {
       form: {
-        category: 0,
+        category: 1,
         title: '',
         subTitle: '',
         price: 0,

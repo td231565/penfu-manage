@@ -7,7 +7,7 @@
             <el-input v-model="queryData.id" placeholder="請輸入商品 id" />
           </el-form-item>
           <el-form-item label="名稱">
-            <el-input v-model="queryData.name" placeholder="請輸入商品名稱" />
+            <el-input v-model="queryData.search" placeholder="請輸入商品名稱" />
           </el-form-item>
           <el-form-item label="類別">
             <el-select v-model="queryData.category" placeholder="請選擇類別">
@@ -18,9 +18,9 @@
         </div>
         <div class="d-flex justify-content-between">
           <el-form-item label="日期">
-            <el-date-picker v-model="queryData.dateRange[0]" type="date" placeholder="起始日期" />
+            <el-date-picker v-model="queryData.startDate" type="date" placeholder="起始日期" />
             <i class="el-icon-minus mx-2" />
-            <el-date-picker v-model="queryData.dateRange[1]" type="date" placeholder="結束日期" />
+            <el-date-picker v-model="queryData.endDate" type="date" placeholder="結束日期" />
           </el-form-item>
           <el-form-item>
             <el-button type="primary" icon="el-icon-search" @click="onQuery">搜尋</el-button>
@@ -30,7 +30,8 @@
     </el-card>
     <el-card class="w-100 rouned-3">
       <div class="d-flex justify-content-between align-items-center mb-4">
-        <p>日期區間：2022-01-01 ~ 2022-01-31</p>
+        <h5 class="my-0">景點列表</h5>
+        <el-button type="primary" icon="el-icon-plus" @click="gotoCreatePage">添加景點</el-button>
       </div>
       <el-table
         v-loading="listLoading"
@@ -42,39 +43,41 @@
       >
         <el-table-column align="center" width="40">
           <template slot-scope="scope">
-            <el-checkbox v-model="scope.row.isCheck" @change="checkOneRow" />
+            <el-checkbox v-model="scope.row.isCheck" />
           </template>
         </el-table-column>
-        <el-table-column align="center" label="商品 ID" width="95">
+        <el-table-column align="center" label="商品 ID" width="80">
           <template slot-scope="scope">
-            {{ scope.$index }}
+            {{ scope.row.id }}
           </template>
         </el-table-column>
-        <el-table-column label="類別" width="80" align="center">
+        <el-table-column label="類別" align="center">
           <template slot-scope="scope">
-            <span>{{ scope.row.author }}</span>
+            {{ scope.row.subtitle }}
           </template>
         </el-table-column>
-        <el-table-column label="名稱">
+        <el-table-column label="名稱" align="center">
           <template slot-scope="scope">
             {{ scope.row.title }}
           </template>
         </el-table-column>
-        <el-table-column label="銷售數量" width="110" align="center">
+        <el-table-column label="銷售數量" align="center">
           <template slot-scope="scope">
-            {{ scope.row.pageviews }}
+            {{ scope.row.title }}
           </template>
         </el-table-column>
-        <el-table-column label="銷售總計" width="110" align="center">
+        <el-table-column label="銷售總計" align="center">
           <template slot-scope="scope">
-            {{ scope.row.pageviews }}
+            {{ scope.row.title }} 元
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="120" align="center">
+        <el-table-column label="操作" width="75" align="center">
           <template slot-scope="scope">
-            <el-button @click="handleClick(scope.$index)">
-              查詢明細
-            </el-button>
+            <el-tooltip class="item" effect="dark" content="查詢明細" placement="top">
+              <el-button type="text" size="large" @click="gotoEditPage(scope.row.id)">
+                <i class="el-icon-s-order" />
+              </el-button>
+            </el-tooltip>
           </template>
         </el-table-column>
       </el-table>
@@ -85,13 +88,16 @@
             :indeterminate="isIndeterminate"
             @change="checkAllRow"
           >全選</el-checkbox>
-          <el-button type="danger" plain class="ms-3" @click="showRemoveConfirm">刪除</el-button>
+          <el-button type="danger" plain class="ms-3" @click="showRemoveConfirm(checkedIdList)">刪除</el-button>
         </div>
         <el-pagination
-          background
-          layout="prev, pager, next"
-          :total="50"
-          :current-page.sync="currentPage"
+          :current-page.sync="page.current"
+          :page-sizes="[10, 30, 50, 100]"
+          :page-size="page.size"
+          layout="total, sizes, prev, pager, next, jumper"
+          :total="page.total"
+          @current-change="fetchData($event, page.size)"
+          @size-change="fetchData(1, $event)"
         />
       </div>
     </el-card>
@@ -99,20 +105,25 @@
 </template>
 
 <script>
-import { getList } from '@/api/table'
+import { getList, deleteItems, patchDetail } from '@/api/attraction'
 
 export default {
-  name: 'SellList',
+  name: 'ProductList',
   data() {
     return {
       list: [],
       listLoading: true,
-      currentPage: 1,
+      page: {
+        current: 1,
+        size: 10,
+        total: 0
+      },
       queryData: {
         id: '',
-        name: '',
+        search: '',
         category: '',
-        dateRange: []
+        startDate: '',
+        endDate: ''
       },
       isCheckAll: false
     }
@@ -120,27 +131,34 @@ export default {
   computed: {
     isIndeterminate() {
       return this.list.some(({ isCheck }) => isCheck) && !this.isCheckAll
+    },
+    checkedIdList() {
+      return this.list.filter(({ isCheck }) => isCheck).map(({ id }) => id)
     }
   },
   created() {
-    this.fetchData()
+    this.fetchData(1, 10)
   },
   methods: {
-    fetchData() {
+    fetchData(page, numberPerPage) {
       this.listLoading = true
-      getList().then(res => {
-        this.list = res.data.items.map(item => {
+      getList(page, numberPerPage, this.queryData).then(data => {
+        this.list = data.attraction.map(item => {
           item.isCheck = false
           return item
         })
+        this.page.current = page
+        this.page.total = data.total
         this.listLoading = false
+      }).catch(err => {
+        console.log(err)
       })
-    },
-    onQuery() {
-
     },
     gotoCreatePage() {
       this.$router.push({ name: 'ProductCreate' })
+    },
+    gotoEditPage(id) {
+      this.$router.push({ name: 'ProductEdit', params: { id }})
     },
     checkAllRow() {
       this.list.forEach(item => { item.isCheck = this.isCheckAll })
@@ -148,22 +166,40 @@ export default {
     checkOneRow(status) {
       this.isCheckAll = status && this.list.every(({ isCheck }) => isCheck)
     },
-    showRemoveConfirm() {
-      this.$confirm('This will permanently delete the file. Continue?', 'Warning', {
-        confirmButtonText: 'OK',
-        cancelButtonText: 'Cancel',
+    showRemoveConfirm(ids) {
+      this.$confirm('確定要刪除選擇的景點嗎？', 'Warning', {
+        confirmButtonText: '確定',
+        cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        this.$message({
-          type: 'success',
-          message: 'Delete completed'
+        this.listLoading = true
+        deleteItems(ids).then(() => {
+          this.$message({ type: 'success', message: '刪除成功' })
+          // 如果分頁內只有一筆，且不是第一頁，就拿上一頁的資料
+          const { current, size, total } = this.page
+          if (current === 1) {
+            this.fetchData(1, size)
+          } else if ((total - ids.length) % size === 0 && current !== 1) {
+            this.fetchData(current - 1, size)
+          } else {
+            this.fetchData(current, size)
+          }
+          this.listLoading = false
         })
       }).catch(() => {
-        this.$message({
-          type: 'info',
-          message: 'Delete canceled'
-        })
+        this.listLoading = false
       })
+    },
+    showDate(date) {
+      return date.replace('T', ' ').slice(0, -3)
+    },
+    switchStatus(status, id) {
+      patchDetail({ status: status ? 1 : 0 }, id).then(data => {
+        this.list.find(item => item.id === id).status = status ? 1 : 0
+      }).catch(() => {})
+    },
+    checkStatus(statusType) {
+      return statusType === 1
     }
   }
 }
