@@ -2,10 +2,10 @@
   <div class="app-container">
     <el-card class="w-100 rouned-3 mb-3">
       <el-form inline :model="queryData">
-        <div class="d-flex justify-content-between">
-          <el-form-item label="商品 ID">
+        <div class="d-flex">
+          <!-- <el-form-item label="商品 ID">
             <el-input v-model="queryData.id" placeholder="請輸入商品 id" />
-          </el-form-item>
+          </el-form-item> -->
           <el-form-item label="名稱">
             <el-input v-model="queryData.search" placeholder="請輸入商品名稱" />
           </el-form-item>
@@ -30,8 +30,8 @@
     </el-card>
     <el-card class="w-100 rouned-3">
       <div class="d-flex justify-content-between align-items-center mb-4">
-        <h5 class="my-0">景點列表</h5>
-        <el-button type="primary" icon="el-icon-plus" @click="gotoCreatePage">添加景點</el-button>
+        <h5 class="my-0">商品列表</h5>
+        <el-button type="primary" icon="el-icon-plus" @click="gotoCreatePage">添加商品</el-button>
       </div>
       <el-table
         v-loading="listLoading"
@@ -53,7 +53,7 @@
         </el-table-column>
         <el-table-column label="類別" align="center">
           <template slot-scope="scope">
-            {{ scope.row.subtitle }}
+            {{ scope.row.category }}
           </template>
         </el-table-column>
         <el-table-column label="名稱" align="center">
@@ -63,12 +63,12 @@
         </el-table-column>
         <el-table-column label="銷售數量" align="center">
           <template slot-scope="scope">
-            {{ scope.row.title }}
+            {{ scope.row.saleNum }}
           </template>
         </el-table-column>
         <el-table-column label="商品價格" align="center">
           <template slot-scope="scope">
-            {{ scope.row.title }} 元
+            {{ scope.row.price }} 元
           </template>
         </el-table-column>
         <el-table-column align="center" prop="updated_at" label="更新時間" width="170">
@@ -121,7 +121,7 @@
 </template>
 
 <script>
-import { getList, deleteItems, patchDetail } from '@/api/attraction'
+import { getList, deleteItems, patchDetail } from '@/api/product'
 
 export default {
   name: 'ProductList',
@@ -135,7 +135,6 @@ export default {
         total: 0
       },
       queryData: {
-        id: '',
         search: '',
         category: '',
         startDate: '',
@@ -191,11 +190,11 @@ export default {
         this.listLoading = true
         deleteItems(ids).then(() => {
           this.$message({ type: 'success', message: '刪除成功' })
-          // 如果分頁內只有一筆，且不是第一頁，就拿上一頁的資料
           const { current, size, total } = this.page
           if (current === 1) {
             this.fetchData(1, size)
-          } else if ((total - ids.length) % size === 0 && current !== 1) {
+          } else if ((total - ids.length) / size === current - 1 && current !== 1) {
+            // 如果分頁內只有一筆，是目前的最後一頁且不是第一頁，就拿上一頁的資料
             this.fetchData(current - 1, size)
           } else {
             this.fetchData(current, size)

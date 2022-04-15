@@ -121,7 +121,7 @@
 </template>
 
 <script>
-import { getList } from '@/api/member'
+import { getList, deleteItems, patchDetail } from '@/api/attraction'
 
 export default {
   name: 'StoreList',
@@ -129,13 +129,15 @@ export default {
     return {
       list: [],
       listLoading: true,
-      currentPage: 1,
+      page: {
+        current: 1,
+        size: 10,
+        total: 0
+      },
       queryData: {
-        id: '',
-        name: '',
-        status: '',
-        tel: '',
-        email: ''
+        search: '',
+        startDate: '',
+        endDate: ''
       },
       isCheckAll: false
     }
@@ -143,27 +145,34 @@ export default {
   computed: {
     isIndeterminate() {
       return this.list.some(({ isCheck }) => isCheck) && !this.isCheckAll
+    },
+    checkedIdList() {
+      return this.list.filter(({ isCheck }) => isCheck).map(({ id }) => id)
     }
   },
   created() {
-    this.fetchData()
+    this.fetchData(1, 10)
   },
   methods: {
-    fetchData() {
+    fetchData(page, numberPerPage) {
       this.listLoading = true
-      getList().then(res => {
-        this.list = res.data.items.map(item => {
+      getList(page, numberPerPage, this.queryData).then(data => {
+        this.list = data.attraction.map(item => {
           item.isCheck = false
           return item
         })
+        this.page.current = page
+        this.page.total = data.total
         this.listLoading = false
+      }).catch(err => {
+        console.log(err)
       })
     },
-    onQuery() {
-
-    },
     gotoCreatePage() {
-      this.$router.push({ name: 'StoreCreate' })
+      this.$router.push({ name: 'AttractionCreate' })
+    },
+    gotoEditPage(id) {
+      this.$router.push({ name: 'AttractionEdit', params: { id }})
     },
     checkAllRow() {
       this.list.forEach(item => { item.isCheck = this.isCheckAll })
@@ -171,22 +180,40 @@ export default {
     checkOneRow(status) {
       this.isCheckAll = status && this.list.every(({ isCheck }) => isCheck)
     },
-    showDisableConfirm() {
-      this.$confirm('This will permanently delete the file. Continue?', 'Warning', {
-        confirmButtonText: 'OK',
-        cancelButtonText: 'Cancel',
+    showRemoveConfirm(ids) {
+      this.$confirm('確定要刪除選擇的景點嗎？', 'Warning', {
+        confirmButtonText: '確定',
+        cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        this.$message({
-          type: 'success',
-          message: 'Delete completed'
+        this.listLoading = true
+        deleteItems(ids).then(() => {
+          this.$message({ type: 'success', message: '刪除成功' })
+          const { current, size, total } = this.page
+          if (current === 1) {
+            this.fetchData(1, size)
+          } else if ((total - ids.length) / size === current - 1 && current !== 1) {
+            // 如果分頁內只有一筆，是目前的最後一頁且不是第一頁，就拿上一頁的資料
+            this.fetchData(current - 1, size)
+          } else {
+            this.fetchData(current, size)
+          }
+          this.listLoading = false
         })
       }).catch(() => {
-        this.$message({
-          type: 'info',
-          message: 'Delete canceled'
-        })
+        this.listLoading = false
       })
+    },
+    showDate(date) {
+      return date.replace('T', ' ').slice(0, -3)
+    },
+    switchStatus(status, id) {
+      patchDetail({ status: status ? 1 : 0 }, id).then(data => {
+        this.list.find(item => item.id === id).status = status ? 1 : 0
+      }).catch(() => {})
+    },
+    checkStatus(statusType) {
+      return statusType === 1
     }
   }
 }

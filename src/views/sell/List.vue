@@ -175,11 +175,11 @@ export default {
         this.listLoading = true
         deleteItems(ids).then(() => {
           this.$message({ type: 'success', message: '刪除成功' })
-          // 如果分頁內只有一筆，且不是第一頁，就拿上一頁的資料
           const { current, size, total } = this.page
           if (current === 1) {
             this.fetchData(1, size)
-          } else if ((total - ids.length) % size === 0 && current !== 1) {
+          } else if ((total - ids.length) / size === current - 1 && current !== 1) {
+            // 如果分頁內只有一筆，是目前的最後一頁且不是第一頁，就拿上一頁的資料
             this.fetchData(current - 1, size)
           } else {
             this.fetchData(current, size)

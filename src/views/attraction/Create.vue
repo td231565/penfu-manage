@@ -103,18 +103,9 @@ export default {
         title: [
           { required: true, message: '請輸入景點名稱', trigger: 'blur' }
         ],
-        subTitle: [
-          { required: true, message: '請輸入景點副標', trigger: 'blur' }
-        ],
-        contentTitle: [
-          { required: true, message: '請輸入內容標題', trigger: 'blur' }
-        ],
         contentArticle: [
           { required: true, message: '請輸入內容描述', trigger: 'blur' }
         ]
-        // listImage: [
-        //   { type: 'array', required: true, message: '請上傳圖片', trigger: 'change' }
-        // ]
       },
       isCreate: false
     }
