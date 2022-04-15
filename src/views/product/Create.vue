@@ -32,6 +32,7 @@
             <template #dateCell="{date, data}">
               <div class="w-100 h-100" @click="selectedDate = data.day">
                 <p class="my-0 border rounded-pill p-1 text-center" :class="{'border-info': data.isSelected}">{{ data.day.slice(-2) }}</p>
+                <i v-if="hasStock(data.day)" class="el-icon-s-ticket d-block text-center mt-2 text-success" />
               </div>
             </template>
           </el-calendar>
@@ -95,13 +96,7 @@ export default {
         status: 0,
         price: 0,
         category: '',
-        ticketStock: [
-          // {
-          //   stock: 1,
-          //   time: '',
-          //   date: ''
-          // }
-        ]
+        ticketStock: []
       },
       formRules: {
         title: [
@@ -180,6 +175,9 @@ export default {
     removeStock(key) {
       const selectedIdx = this.form.ticketStock.findIndex(item => item.key === key)
       this.form.ticketStock.splice(selectedIdx, 1)
+    },
+    hasStock(date) {
+      return this.form.ticketStock.filter(item => item.date === date).length > 0
     },
     gotoList() {
       this.$confirm('確定返回列表嗎？資料將不會儲存').then(() => {
