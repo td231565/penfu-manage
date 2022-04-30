@@ -50,17 +50,17 @@
         </el-table-column>
         <el-table-column align="center" label="會員 ID" width="95">
           <template slot-scope="scope">
-            {{ scope.row.id }}
+            {{ scope.row.lineID }}
           </template>
         </el-table-column>
         <el-table-column label="名稱" width="100" align="center">
           <template slot-scope="scope">
-            {{ scope.row.name }}
+            {{ scope.row.usernameChinese }}
           </template>
         </el-table-column>
         <el-table-column label="手機號碼" width="110" align="center">
           <template slot-scope="scope">
-            {{ scope.row.tel }}
+            {{ scope.row.userPhone }}
           </template>
         </el-table-column>
         <el-table-column label="email" align="center">
@@ -107,7 +107,7 @@
 </template>
 
 <script>
-import { getList, deleteItems, patchDetail } from '@/api/attraction'
+import { getList } from '@/api/member'
 
 export default {
   name: 'MemberList',
@@ -166,37 +166,8 @@ export default {
     checkOneRow(status) {
       this.isCheckAll = status && this.list.every(({ isCheck }) => isCheck)
     },
-    showRemoveConfirm(ids) {
-      this.$confirm('確定要刪除選擇的景點嗎？', 'Warning', {
-        confirmButtonText: '確定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(() => {
-        this.listLoading = true
-        deleteItems(ids).then(() => {
-          this.$message({ type: 'success', message: '刪除成功' })
-          const { current, size, total } = this.page
-          if (current === 1) {
-            this.fetchData(1, size)
-          } else if ((total - ids.length) / size === current - 1 && current !== 1) {
-            // 如果分頁內只有一筆，是目前的最後一頁且不是第一頁，就拿上一頁的資料
-            this.fetchData(current - 1, size)
-          } else {
-            this.fetchData(current, size)
-          }
-          this.listLoading = false
-        })
-      }).catch(() => {
-        this.listLoading = false
-      })
-    },
     showDate(date) {
       return date.replace('T', ' ').slice(0, -3)
-    },
-    switchStatus(status, id) {
-      patchDetail({ status: status ? 1 : 0 }, id).then(data => {
-        this.list.find(item => item.id === id).status = status ? 1 : 0
-      }).catch(() => {})
     },
     checkStatus(statusType) {
       return statusType === 1

@@ -22,9 +22,14 @@
       <el-form-item label="內容描述" prop="contentArticle">
         <Editor :content="form.contentArticle" @on-change="setInputValue('contentArticle', $event)" />
       </el-form-item>
-      <el-form-item v-if="form.category === '伴手禮'" label="商品價格" prop="price">
-        <el-input-number v-model="form.price" placeholder="請輸入商品價格" :min="1" />
-      </el-form-item>
+      <template v-if="form.category === '伴手禮'">
+        <el-form-item label="商品價格" prop="price">
+          <el-input-number v-model="form.price" placeholder="請輸入商品價格" :min="1" />
+        </el-form-item>
+        <el-form-item label="庫存" prop="stock">
+          <el-input-number v-model="stock" placeholder="請輸入商品庫存" :min="1" />
+        </el-form-item>
+      </template>
       <template v-else-if="form.category === '票券'">
         <hr class="border-0 border-top border-gray my-5">
         <div class="d-flex">
@@ -98,6 +103,7 @@ export default {
         category: '',
         ticketStock: []
       },
+      stock: 1,
       formRules: {
         title: [
           { required: true, message: '請輸入商品名稱', trigger: 'blur' }
@@ -142,7 +148,12 @@ export default {
           this.isLoading = true
           const submitApi = this.isCreate ? postDetail : patchDetail
           if (this.form.category === '伴手禮') {
-            delete this.form.ticketStock
+            this.form.ticketStock = [{
+              date: '2999-12-31',
+              time: '11:59',
+              stock: parseInt(this.stock),
+              price: parseInt(this.form.price)
+            }]
           } else {
             this.form.ticketStock.forEach(item => {
               item.price = parseInt(item.price)
