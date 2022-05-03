@@ -13,19 +13,19 @@
               </el-form-item>
             </div>
             <div class="d-flex justify-content-between">
-              <el-form-item label="狀態">
+              <!-- <el-form-item label="狀態">
                 <el-select v-model="queryData.status" placeholder="請選擇店家狀態">
                   <el-option label="正常" :value="1" />
                   <el-option label="已停權" :value="2" />
                 </el-select>
-              </el-form-item>
+              </el-form-item> -->
               <el-form-item label="電話號碼">
-                <el-input v-model="queryData.phone" placeholder="請輸入電話號碼" />
+                <el-input v-model="queryData.cellphone" placeholder="請輸入電話號碼" />
               </el-form-item>
             </div>
           </div>
           <el-form-item class="d-flex justify-content-end align-items-end flex-shrink-1">
-            <el-button type="primary" icon="el-icon-search" @click="onQuery">搜尋</el-button>
+            <el-button type="primary" icon="el-icon-search" @click="fetchData(1, page.size)">搜尋</el-button>
           </el-form-item>
         </div>
       </el-form>
@@ -43,77 +43,65 @@
         fit
         highlight-current-row
       >
-        <el-table-column align="center" width="40">
+        <!-- <el-table-column align="center" width="40">
           <template slot-scope="scope">
             <el-checkbox v-model="scope.row.isCheck" />
           </template>
-        </el-table-column>
-        <el-table-column align="center" label="店家 ID" width="95">
+        </el-table-column> -->
+        <el-table-column align="center" label="店家 ID">
           <template slot-scope="scope">
-            {{ scope.$index }}
+            {{ scope.row.id }}
           </template>
         </el-table-column>
-        <el-table-column label="名稱" width="100" align="center">
+        <el-table-column label="名稱" align="center">
           <template slot-scope="scope">
             {{ scope.row.name }}
           </template>
         </el-table-column>
-        <el-table-column label="手機號碼" width="110" align="center">
+        <el-table-column label="電話" align="center">
           <template slot-scope="scope">
-            {{ scope.row.tel }}
-          </template>
-        </el-table-column>
-        <el-table-column label="電話" width="110" align="center">
-          <template slot-scope="scope">
-            {{ scope.row.tel }}
+            {{ scope.row.phoneNumber }}
           </template>
         </el-table-column>
         <el-table-column label="email" align="center">
           <template slot-scope="scope">
-            {{ scope.row.email }}
+            {{ scope.row.Email }}
           </template>
         </el-table-column>
-        <el-table-column label="地址" width="110" align="center">
-          <template slot-scope="scope">
-            {{ scope.row.birthday }}
-          </template>
-        </el-table-column>
-        <el-table-column label="使用狀態" width="90" align="center">
+        <!-- <el-table-column label="使用狀態" width="90" align="center">
           <template slot-scope="scope">
             <el-tooltip class="item" effect="dark" :content="scope.row.status ? '正常' : '已停權'" placement="top">
               <el-switch v-model="scope.row.status" />
             </el-tooltip>
           </template>
-        </el-table-column>
-        <el-table-column label="操作" width="100">
+        </el-table-column> -->
+        <el-table-column label="操作" width="60">
           <template slot-scope="scope">
             <el-tooltip class="item" effect="dark" content="編輯" placement="top">
-              <el-button type="text" size="large" @click="handleClick(scope.$index)">
+              <el-button type="text" size="large" @click="gotoEditPage(scope.row.id)">
                 <i class="el-icon-edit" />
               </el-button>
             </el-tooltip>
-            <!-- <el-tooltip class="item" effect="dark" content="刪除" placement="top">
-              <el-button type="text" size="large">
-                <i class="el-icon-delete" />
-              </el-button>
-            </el-tooltip> -->
           </template>
         </el-table-column>
       </el-table>
-      <div class="d-flex justify-content-between align-items-center mt-3">
-        <div class="d-flex align-items-center">
+      <div class="d-flex justify-content-end align-items-center mt-3">
+        <!-- <div class="d-flex align-items-center">
           <el-checkbox
             v-model="isCheckAll"
             :indeterminate="isIndeterminate"
             @change="checkAllRow"
           >全選</el-checkbox>
           <el-button type="danger" plain class="ms-3" @click="showDisableConfirm">停權</el-button>
-        </div>
+        </div> -->
         <el-pagination
-          background
-          layout="prev, pager, next"
-          :total="50"
-          :current-page.sync="currentPage"
+          :current-page.sync="page.current"
+          :page-sizes="[10, 30, 50, 100]"
+          :page-size="page.size"
+          layout="total, sizes, prev, pager, next, jumper"
+          :total="page.total"
+          @current-change="fetchData($event, page.size)"
+          @size-change="fetchData(1, $event)"
         />
       </div>
     </el-card>
@@ -121,7 +109,7 @@
 </template>
 
 <script>
-import { getList, deleteItems, patchDetail } from '@/api/attraction'
+import { getList } from '@/api/member'
 
 export default {
   name: 'StoreList',
@@ -135,9 +123,12 @@ export default {
         total: 0
       },
       queryData: {
-        search: '',
+        name: '',
+        email: '',
+        cellphone: '',
         startDate: '',
-        endDate: ''
+        endDate: '',
+        userCategory: '店家'
       },
       isCheckAll: false
     }
@@ -169,10 +160,10 @@ export default {
       })
     },
     gotoCreatePage() {
-      this.$router.push({ name: 'AttractionCreate' })
+      this.$router.push({ name: 'StoreCreate' })
     },
     gotoEditPage(id) {
-      this.$router.push({ name: 'AttractionEdit', params: { id }})
+      this.$router.push({ name: 'StoreEdit', params: { id }})
     },
     checkAllRow() {
       this.list.forEach(item => { item.isCheck = this.isCheckAll })
@@ -180,37 +171,32 @@ export default {
     checkOneRow(status) {
       this.isCheckAll = status && this.list.every(({ isCheck }) => isCheck)
     },
-    showRemoveConfirm(ids) {
-      this.$confirm('確定要刪除選擇的景點嗎？', 'Warning', {
-        confirmButtonText: '確定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(() => {
-        this.listLoading = true
-        deleteItems(ids).then(() => {
-          this.$message({ type: 'success', message: '刪除成功' })
-          const { current, size, total } = this.page
-          if (current === 1) {
-            this.fetchData(1, size)
-          } else if ((total - ids.length) / size === current - 1 && current !== 1) {
-            // 如果分頁內只有一筆，是目前的最後一頁且不是第一頁，就拿上一頁的資料
-            this.fetchData(current - 1, size)
-          } else {
-            this.fetchData(current, size)
-          }
-          this.listLoading = false
-        })
-      }).catch(() => {
-        this.listLoading = false
-      })
-    },
+    // showDisableConfirm(ids) {
+    //   this.$confirm('確定要刪除選擇的景點嗎？', 'Warning', {
+    //     confirmButtonText: '確定',
+    //     cancelButtonText: '取消',
+    //     type: 'warning'
+    //   }).then(() => {
+    //     this.listLoading = true
+    //     deleteItems(ids).then(() => {
+    //       this.$message({ type: 'success', message: '刪除成功' })
+    //       const { current, size, total } = this.page
+    //       if (current === 1) {
+    //         this.fetchData(1, size)
+    //       } else if ((total - ids.length) / size === current - 1 && current !== 1) {
+    //         // 如果分頁內只有一筆，是目前的最後一頁且不是第一頁，就拿上一頁的資料
+    //         this.fetchData(current - 1, size)
+    //       } else {
+    //         this.fetchData(current, size)
+    //       }
+    //       this.listLoading = false
+    //     })
+    //   }).catch(() => {
+    //     this.listLoading = false
+    //   })
+    // },
     showDate(date) {
       return date.replace('T', ' ').slice(0, -3)
-    },
-    switchStatus(status, id) {
-      patchDetail({ status: status ? 1 : 0 }, id).then(data => {
-        this.list.find(item => item.id === id).status = status ? 1 : 0
-      }).catch(() => {})
     },
     checkStatus(statusType) {
       return statusType === 1

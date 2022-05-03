@@ -121,7 +121,7 @@ export const constantRoutes = [
         meta: { title: '店家新增', icon: 'tree' }
       },
       {
-        path: 'edit',
+        path: 'edit/:id',
         name: 'StoreEdit',
         component: () => import('@/views/store/Create'),
         meta: { title: '店家編輯', icon: 'tree' },
@@ -131,16 +131,16 @@ export const constantRoutes = [
   },
 
   {
-    path: '/sell',
+    path: '/order',
     component: Layout,
-    redirect: '/sell/list',
-    name: 'Sell',
+    redirect: '/order/list',
+    name: 'order',
     meta: { title: '銷售管理', icon: 'el-icon-s-help' },
     children: [
       {
         path: 'list',
-        name: 'SellList',
-        component: () => import('@/views/sell/List'),
+        name: 'OrderList',
+        component: () => import('@/views/order/List'),
         meta: { title: '銷售列表', icon: 'table' },
         hidden: true
       }
@@ -176,16 +176,16 @@ export const constantRoutes = [
     ]
   },
 
-  {
-    path: 'external-link',
-    component: Layout,
-    children: [
-      {
-        path: 'https://panjiachen.github.io/vue-element-admin-site/#/',
-        meta: { title: 'External Link', icon: 'link' }
-      }
-    ]
-  },
+  // {
+  //   path: 'external-link',
+  //   component: Layout,
+  //   children: [
+  //     {
+  //       path: 'https://panjiachen.github.io/vue-element-admin-site/#/',
+  //       meta: { title: 'External Link', icon: 'link' }
+  //     }
+  //   ]
+  // },
 
   // 404 page must be placed at the end !!!
   { path: '*', redirect: '/404', hidden: true }

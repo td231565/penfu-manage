@@ -9,14 +9,15 @@
                 <el-input v-model="queryData.name" placeholder="請輸入會員名稱" />
               </el-form-item>
               <el-form-item label="手機號碼">
-                <el-input v-model="queryData.tel" placeholder="請輸入手機號碼" />
+                <el-input v-model="queryData.cellphone" placeholder="請輸入手機號碼" />
               </el-form-item>
             </div>
             <div class="d-flex justify-content-between">
-              <el-form-item label="狀態">
-                <el-select v-model="queryData.status" placeholder="請選擇會員狀態">
-                  <el-option label="正常" :value="1" />
-                  <el-option label="已停權" :value="2" />
+              <el-form-item label="會員類型">
+                <el-select v-model="queryData.userCategory" placeholder="請選擇會員狀態">
+                  <el-option label="全部" value="" />
+                  <el-option label="會員" value="會員" />
+                  <el-option label="店家" value="店家" />
                 </el-select>
               </el-form-item>
               <el-form-item label="email">
@@ -25,7 +26,7 @@
             </div>
           </div>
           <el-form-item class="d-flex justify-content-end align-items-end flex-shrink-1">
-            <el-button type="primary" icon="el-icon-search" @click="onQuery">搜尋</el-button>
+            <el-button type="primary" icon="el-icon-search" @click="fetchData(1, page.size)">搜尋</el-button>
           </el-form-item>
         </div>
       </el-form>
@@ -33,7 +34,6 @@
     <el-card class="w-100 rouned-3">
       <div class="d-flex justify-content-between align-items-center mb-4">
         <h5 class="my-0">會員列表</h5>
-        <!-- <el-button type="primary" icon="el-icon-plus" @click="gotoCreatePage">添加商品</el-button> -->
       </div>
       <el-table
         v-loading="listLoading"
@@ -43,32 +43,32 @@
         fit
         highlight-current-row
       >
-        <el-table-column align="center" width="40">
+        <!-- <el-table-column align="center" width="40">
           <template slot-scope="scope">
             <el-checkbox v-model="scope.row.isCheck" />
           </template>
-        </el-table-column>
-        <el-table-column align="center" label="會員 ID" width="95">
+        </el-table-column> -->
+        <el-table-column align="center" label="會員 ID">
           <template slot-scope="scope">
-            {{ scope.row.lineID }}
+            {{ scope.row.id }}
           </template>
         </el-table-column>
-        <el-table-column label="名稱" width="100" align="center">
+        <el-table-column label="名稱" align="center">
           <template slot-scope="scope">
-            {{ scope.row.usernameChinese }}
+            {{ scope.row.name }}
           </template>
         </el-table-column>
-        <el-table-column label="手機號碼" width="110" align="center">
+        <el-table-column label="手機號碼" align="center">
           <template slot-scope="scope">
-            {{ scope.row.userPhone }}
+            {{ scope.row.phoneNumber }}
           </template>
         </el-table-column>
         <el-table-column label="email" align="center">
           <template slot-scope="scope">
-            {{ scope.row.email }}
+            {{ scope.row.Email }}
           </template>
         </el-table-column>
-        <el-table-column label="生日" width="110" align="center">
+        <!-- <el-table-column label="生日" width="110" align="center">
           <template slot-scope="scope">
             {{ scope.row.birthday }}
           </template>
@@ -77,24 +77,25 @@
           <template slot-scope="scope">
             {{ scope.row.sex }}
           </template>
-        </el-table-column>
+        </el-table-column> -->
         <el-table-column label="使用狀態" width="90" align="center">
           <template slot-scope="scope">
-            <el-tooltip class="item" effect="dark" :content="scope.row.status ? '正常' : '已停權'" placement="top">
+            <span>使用中</span>
+            <!-- <el-tooltip class="item" effect="dark" :content="scope.row.status ? '正常' : '已停權'" placement="top">
               <el-switch v-model="scope.row.status" />
-            </el-tooltip>
+            </el-tooltip> -->
           </template>
         </el-table-column>
       </el-table>
-      <div class="d-flex justify-content-between align-items-center mt-3">
-        <div class="d-flex align-items-center">
+      <div class="d-flex justify-content-end align-items-center mt-3">
+        <!-- <div class="d-flex align-items-center">
           <el-checkbox
             v-model="isCheckAll"
             :indeterminate="isIndeterminate"
             @change="checkAllRow"
           >全選</el-checkbox>
           <el-button type="danger" plain class="ms-3" @click="showDisableConfirm">停權</el-button>
-        </div>
+        </div> -->
         <el-pagination
           background
           layout="prev, pager, next"
@@ -121,9 +122,10 @@ export default {
         total: 0
       },
       queryData: {
-        search: '',
-        startDate: '',
-        endDate: ''
+        name: '',
+        email: '',
+        cellphone: '',
+        userCategory: '會員'
       },
       isCheckAll: false
     }
@@ -153,12 +155,6 @@ export default {
       }).catch(err => {
         console.log(err)
       })
-    },
-    gotoCreatePage() {
-      this.$router.push({ name: 'AttractionCreate' })
-    },
-    gotoEditPage(id) {
-      this.$router.push({ name: 'AttractionEdit', params: { id }})
     },
     checkAllRow() {
       this.list.forEach(item => { item.isCheck = this.isCheckAll })

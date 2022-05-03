@@ -2,7 +2,7 @@ import request from '@/utils/request'
 
 export function getList(page, numberPerPage, queryData) {
   return request({
-    url: 'users/backend_user_list',
+    url: 'order/saleCount/',
     method: 'post',
     data: {
       page,
@@ -12,10 +12,10 @@ export function getList(page, numberPerPage, queryData) {
   })
 }
 
-export function updateUserPassword(payload) {
+export function getDetail(queryData) {
   return request({
-    url: 'users/change_password/',
+    url: `order/saleDetail/`,
     method: 'post',
-    data: payload
+    data: queryData
   })
 }
