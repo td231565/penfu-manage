@@ -11,11 +11,3 @@ export function getList(page, numberPerPage, queryData) {
     }
   })
 }
-
-export function updateUserPassword(payload) {
-  return request({
-    url: 'users/change_password/',
-    method: 'post',
-    data: payload
-  })
-}
