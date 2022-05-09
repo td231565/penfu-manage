@@ -159,6 +159,7 @@ export default {
               item.price = parseInt(item.price)
               item.stock = parseInt(item.stock)
             })
+            this.form.price = this.form.ticketStock.map(({ price }) => price).sort()[0]
           }
           const id = this.$route.params.id
           submitApi(this.form, id).then(() => {

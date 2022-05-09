@@ -97,10 +97,13 @@
           <el-button type="danger" plain class="ms-3" @click="showDisableConfirm">停權</el-button>
         </div> -->
         <el-pagination
-          background
-          layout="prev, pager, next"
-          :total="50"
-          :current-page.sync="currentPage"
+          :current-page.sync="page.current"
+          :page-sizes="[10, 30, 50, 100]"
+          :page-size="page.size"
+          layout="total, sizes, prev, pager, next, jumper"
+          :total="page.total"
+          @current-change="fetchData($event, page.size)"
+          @size-change="fetchData(1, $event)"
         />
       </div>
     </el-card>
