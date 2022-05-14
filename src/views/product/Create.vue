@@ -89,6 +89,11 @@ export default {
   name: 'ProductCreate',
   components: { Editor, ImageUpload },
   data() {
+    const checkArrayHasContent = (rule, value, callback) => {
+      if (value.length === 0) {
+        return callback(new Error('請上傳圖片'))
+      }
+    }
     return {
       isLoading: false,
       placeQuery: '',
@@ -113,6 +118,12 @@ export default {
         ],
         contentArticle: [
           { required: true, message: '請輸入內容描述', trigger: 'blur' }
+        ],
+        listImage: [
+          { required: true, validator: checkArrayHasContent, trigger: 'blur' }
+        ],
+        contentImage: [
+          { required: true, validator: checkArrayHasContent, trigger: 'blur' }
         ],
         price: [
           { required: true, message: '請輸入商品價格', trigger: 'blur' }

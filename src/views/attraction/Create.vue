@@ -41,7 +41,7 @@
           <span>Lng</span>
         </el-col>
         <el-col :span="10">
-          <el-form-item prop="lat">
+          <el-form-item prop="lng">
             <el-input v-model="form.map.lng" placeholder="請輸入經度" />
           </el-form-item>
         </el-col>
@@ -84,6 +84,11 @@ export default {
   name: 'AttractionCreate',
   components: { Editor, ImageUpload },
   data() {
+    const checkArrayHasContent = (rule, value, callback) => {
+      if (value.length === 0) {
+        return callback(new Error('請上傳圖片'))
+      }
+    }
     return {
       isLoading: false,
       placeQuery: '',
@@ -103,8 +108,17 @@ export default {
         title: [
           { required: true, message: '請輸入景點名稱', trigger: 'blur' }
         ],
+        contentTitle: [
+          { required: true, message: '請輸入內容標題', trigger: 'blur' }
+        ],
         contentArticle: [
           { required: true, message: '請輸入內容描述', trigger: 'blur' }
+        ],
+        listImage: [
+          { required: true, validator: checkArrayHasContent, trigger: 'blur' }
+        ],
+        contentImage: [
+          { required: true, validator: checkArrayHasContent, trigger: 'blur' }
         ]
       },
       isCreate: false
