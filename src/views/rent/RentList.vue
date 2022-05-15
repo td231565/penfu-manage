@@ -1,36 +1,32 @@
 <template>
   <div class="app-container">
-    <!-- <el-card class="w-100 rouned-3 mb-3">
+    <el-card class="w-100 rouned-3 mb-3">
       <el-form inline :model="queryData">
         <div class="d-flex">
           <el-form-item label="車輛 ID">
-            <el-input v-model="queryData.id" placeholder="請輸入車輛 id" />
+            <el-input v-model="queryData.carID" placeholder="請輸入車輛 id" />
           </el-form-item>
           <el-form-item label="名稱">
-            <el-input v-model="queryData.search" placeholder="請輸入車輛名稱" />
+            <el-input v-model="queryData.carName" placeholder="請輸入車輛名稱" />
           </el-form-item>
-          <el-form-item label="類別">
-            <el-select v-model="queryData.category" placeholder="請選擇類別">
-              <el-option label="票券" :value="1" />
-              <el-option label="伴手禮" :value="2" />
+          <el-form-item label="租借狀態">
+            <el-select v-model="queryData.status" placeholder="請選擇類別">
+              <el-option label="全部" value="" />
+              <el-option label="空閒中" :value="1" />
+              <el-option label="租借中" :value="2" />
             </el-select>
           </el-form-item>
         </div>
-        <div class="d-flex justify-content-between">
-          <el-form-item label="日期">
-            <el-date-picker v-model="queryData.startDate" type="date" placeholder="起始日期" />
-            <i class="el-icon-minus mx-2" />
-            <el-date-picker v-model="queryData.endDate" type="date" placeholder="結束日期" />
-          </el-form-item>
+        <div class="d-flex justify-content-end">
           <el-form-item>
             <el-button type="primary" icon="el-icon-search" @click="fetchData(1, page.size)">搜尋</el-button>
           </el-form-item>
         </div>
       </el-form>
-    </el-card> -->
+    </el-card>
     <el-card class="w-100 rouned-3">
       <div class="d-flex justify-content-between align-items-center mb-4">
-        <h5 class="my-0">商品列表</h5>
+        <h5 class="my-0">租借列表</h5>
         <!-- <el-button type="primary" icon="el-icon-plus" @click="gotoCreatePage">添加商品</el-button> -->
       </div>
       <el-table
@@ -46,24 +42,24 @@
             <el-checkbox v-model="scope.row.isCheck" />
           </template>
         </el-table-column> -->
-        <el-table-column align="center" label="訂單 ID" width="80">
+        <el-table-column label="車輛 ID" align="center">
           <template slot-scope="scope">
             {{ scope.row.id }}
           </template>
         </el-table-column>
-        <el-table-column label="車輛 ID" align="center">
+        <el-table-column label="車輛名稱" align="center">
           <template slot-scope="scope">
-            {{ scope.row.carID }}
+            {{ scope.row.title }}
           </template>
         </el-table-column>
         <el-table-column label="當前位置" align="center">
           <template slot-scope="scope">
-            {{ scope.row.returnLocate || scope.row.rentLocate }}
+            {{ scope.row.lastLocate }}
           </template>
         </el-table-column>
         <el-table-column label="租借狀況" align="center">
           <template slot-scope="scope">
-            {{ Number(scope.row.status) === 1 ? '已歸還' : '租借中' }}
+            {{ Number(scope.row.status) === 1 ? '空閒中' : '租借中' }}
           </template>
         </el-table-column>
         <el-table-column align="center" prop="updated_at" label="更新時間" width="170">
@@ -112,10 +108,9 @@ export default {
         total: 0
       },
       queryData: {
-        search: '',
-        category: '',
-        startDate: '',
-        endDate: ''
+        status: '',
+        carName: '',
+        carID: ''
       }
     }
   },
@@ -126,7 +121,7 @@ export default {
     fetchData(page, numberPerPage) {
       this.listLoading = true
       getRentList(page, numberPerPage, this.queryData).then(data => {
-        this.list = data.carOrder
+        this.list = data.car
         this.page.current = page
         this.page.total = data.total
         this.listLoading = false
@@ -134,8 +129,8 @@ export default {
         console.log(err)
       })
     },
-    returnBike(id, isReturn) {
-      if (isReturn) { return }
+    returnBike(id, isReturned) {
+      if (isReturned) { return }
       this.$confirm('確定歸還此車輛嗎？', 'Warning', {
         confirmButtonText: '確定',
         cancelButtonText: '取消',

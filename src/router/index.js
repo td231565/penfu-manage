@@ -181,6 +181,34 @@ export const constantRoutes = [
     ]
   },
 
+  {
+    path: '/rent',
+    component: Layout,
+    redirect: '/rent/list',
+    name: 'Rent',
+    meta: { title: '租借管理', icon: 'el-icon-s-help' },
+    children: [
+      {
+        path: 'list',
+        name: 'RentList',
+        component: () => import('@/views/rent/RentList'),
+        meta: { title: '租借列表', icon: 'table' }
+      },
+      {
+        path: 'bikeList',
+        name: 'BikeList',
+        component: () => import('@/views/rent/BikeList'),
+        meta: { title: '車輛管理', icon: 'tree' }
+      },
+      {
+        path: 'locateList',
+        name: 'LocateList',
+        component: () => import('@/views/rent/LocateList'),
+        meta: { title: '地點管理', icon: 'tree' }
+      }
+    ]
+  },
+
   // {
   //   path: 'external-link',
   //   component: Layout,

@@ -1,9 +1,9 @@
 <template>
-  <div class="app-container">
+  <div v-loading.fullscreen.lock="isLoading" class="app-container">
     <el-card class="w-100 rouned-3">
       <div class="d-flex justify-content-between align-items-center mb-4">
-        <h5 class="my-0">商品列表</h5>
-        <!-- <el-button type="primary" icon="el-icon-plus" @click="gotoCreatePage">添加商品</el-button> -->
+        <h5 class="my-0">車輛列表</h5>
+        <el-button type="primary" icon="el-icon-plus" @click="showModal()">新增車輛</el-button>
       </div>
       <el-table
         v-loading="listLoading"
@@ -25,17 +25,17 @@
         </el-table-column>
         <el-table-column label="車輛名稱" align="center">
           <template slot-scope="scope">
-            {{ scope.row.category }}
+            {{ scope.row.title }}
           </template>
         </el-table-column>
         <el-table-column label="當前位置" align="center">
           <template slot-scope="scope">
-            {{ scope.row.title }}
+            {{ scope.row.lastLocate }}
           </template>
         </el-table-column>
         <el-table-column label="租借狀況" align="center">
           <template slot-scope="scope">
-            {{ scope.row.saleNum }}
+            {{ Number(scope.row.status) === 1 ? '空閒中' : '租借中' }}
           </template>
         </el-table-column>
         <!-- <el-table-column align="center" prop="updated_at" label="更新時間" width="170">
@@ -44,16 +44,23 @@
             <span>{{ showDate(scope.row.update_time) }}</span>
           </template>
         </el-table-column> -->
-        <el-table-column label="操作" width="75" align="center">
+        <el-table-column label="操作" width="120" align="center">
           <template slot-scope="scope">
-            <el-tooltip class="item" effect="dark" content="歸還" placement="top">
-              <el-button type="text" size="large" @click="gotoEditPage(scope.row.id)">
+            <el-tooltip class="item" effect="dark" content="編輯" placement="top">
+              <el-button type="text" size="large" @click="showModal(scope.row.id)">
                 <i class="el-icon-edit" />
               </el-button>
             </el-tooltip>
-            <el-tooltip class="item" effect="dark" content="租借" placement="top">
-              <el-button type="text" size="large" @click="showRemoveConfirm([scope.row.id])">
+            <el-tooltip class="item" effect="dark" content="刪除" placement="top">
+              <el-button type="text" size="large" @click="showRemoveConfirm(scope.row.id)">
                 <i class="el-icon-delete" />
+              </el-button>
+            </el-tooltip>
+            <el-tooltip class="item" effect="dark" content="顯示 QRCode" placement="top">
+              <el-button type="text" size="large" @click="showQrcode(scope.row.id)">
+                <span class="material-symbols-outlined" style="font-size: 14px;">
+                  qr_code
+                </span>
               </el-button>
             </el-tooltip>
           </template>
@@ -79,30 +86,74 @@
         />
       </div>
     </el-card>
+    <!-- Modal -->
+    <el-dialog
+      title="新增車輛"
+      :visible.sync="isShowModal"
+      width="60%"
+      :close-on-click-modal="false"
+    >
+      <el-form ref="form" :model="bikeInfo" :rules="formRules" label-width="100px">
+        <el-form-item label="車輛名稱" prop="title">
+          <el-input v-model="bikeInfo.title" placeholder="請輸入車輛名稱" />
+        </el-form-item>
+        <el-form-item label="車輛地點" prop="lastLocate">
+          <el-select v-model="bikeInfo.lastLocate" placeholder="請選擇">
+            <el-option v-for="item in locates" :key="item.id" :label="item.title" :value="item.title" />
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="hideModal">取消</el-button>
+        <el-button type="primary" @click="confirmModal">確認</el-button>
+      </span>
+    </el-dialog>
+    <!-- QRCode Modal -->
+    <el-dialog
+      :title="bikeInfo.title"
+      :visible.sync="isShowQrcode"
+      width="50%"
+      :close-on-click-modal="false"
+    >
+      <div class="d-flex justify-content-center">
+        <VueQrcode :value="bikeInfo.id" :options="qrOptions" />
+      </div>
+      <p class="text-center">請右鍵點擊下載</p>
+    </el-dialog>
   </div>
 </template>
 
 <script>
-import { getBikeList } from '@/api/rent'
+import VueQrcode from '@chenfengyuan/vue-qrcode'
+import { getBikeList, getLocateList, postCreateNewBike, patchBike, deleteBike } from '@/api/rent'
 
 export default {
   name: 'BikeList',
+  components: { VueQrcode },
   data() {
     return {
       list: [],
+      locates: [],
       listLoading: true,
+      isLoading: false,
+      isCheckAll: false,
+      isShowModal: false,
+      bikeInfo: {},
+      isShowQrcode: false,
+      qrOptions: { width: 160, margin: 0, scale: 4 },
+      formRules: {
+        title: [
+          { required: true, message: '請輸入名稱', trigger: 'blur' }
+        ],
+        lastLocate: [
+          { required: true, message: '請輸入地址', trigger: 'blur' }
+        ]
+      },
       page: {
         current: 1,
         size: 10,
         total: 0
-      },
-      queryData: {
-        search: '',
-        category: '',
-        startDate: '',
-        endDate: ''
-      },
-      isCheckAll: false
+      }
     }
   },
   computed: {
@@ -115,12 +166,13 @@ export default {
   },
   created() {
     this.fetchData(1, 10)
+    this.getAllLocates()
   },
   methods: {
-    fetchData(page, numberPerPage) {
+    fetchData(page, size) {
       this.listLoading = true
-      getBikeList(page, numberPerPage, this.queryData).then(data => {
-        this.list = data.attraction.map(item => {
+      getBikeList(page, size).then(data => {
+        this.list = data.car.map(item => {
           item.isCheck = false
           return item
         })
@@ -129,6 +181,41 @@ export default {
         this.listLoading = false
       }).catch(err => {
         console.log(err)
+        this.listLoading = false
+      })
+    },
+    getAllLocates() {
+      this.isLoading = true
+      getLocateList().then(data => {
+        this.locates = data.locate
+        this.isLoading = false
+      }).catch(err => {
+        console.log(err)
+        this.isLoading = false
+      })
+    },
+    updateBike(type) {
+      this.isLoading = true
+      const updateApi = type === 'create' ? postCreateNewBike : patchBike
+      updateApi(this.bikeInfo).then(data => {
+        this.isShowModal = false
+        this.isLoading = false
+        const action = type === 'create' ? '新增' : '編輯'
+        this.$message({ type: 'success', message: `${action}成功` })
+        this.fetchData()
+      }).catch(err => {
+        console.log(err)
+        this.isLoading = false
+      })
+    },
+    removeBike(id) {
+      this.listLoading = true
+      deleteBike(id).then(data => {
+        this.$message({ type: 'success', message: '刪除車輛成功' })
+        this.fetchData()
+      }).catch(err => {
+        console.log(err)
+        this.listLoading = false
       })
     },
     checkAllRow() {
@@ -137,40 +224,38 @@ export default {
     checkOneRow(status) {
       this.isCheckAll = status && this.list.every(({ isCheck }) => isCheck)
     },
-    showRemoveConfirm(ids) {
-      this.$confirm('確定要刪除選擇的商品嗎？', 'Warning', {
+    showRemoveConfirm(id) {
+      this.$confirm('確定要刪除選擇的車輛嗎？', 'Warning', {
         confirmButtonText: '確定',
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        this.listLoading = true
-        // deleteItems(ids).then(() => {
-        //   this.$message({ type: 'success', message: '刪除成功' })
-        //   const { current, size, total } = this.page
-        //   if (current === 1) {
-        //     this.fetchData(1, size)
-        //   } else if ((total - ids.length) / size === current - 1 && current !== 1) {
-        //     // 如果分頁內只有一筆，是目前的最後一頁且不是第一頁，就拿上一頁的資料
-        //     this.fetchData(current - 1, size)
-        //   } else {
-        //     this.fetchData(current, size)
-        //   }
-        //   this.listLoading = false
-        // })
-      }).catch(() => {
-        this.listLoading = false
+        this.removeBike(id)
       })
     },
-    showDate(date) {
-      return date.replace('T', ' ').slice(0, -3)
+    confirmModal() {
+      this.$refs.form.validate(valid => {
+        if (valid) {
+          this.updateBike(this.bikeInfo.id ? 'update' : 'create')
+        } else {
+          this.$message.error('請確認必填欄位輸入完整')
+          return false
+        }
+      })
     },
-    switchStatus(status, id) {
-      // patchDetail({ status: status ? 1 : 0 }, id).then(data => {
-      //   this.list.find(item => item.id === id).status = status ? 1 : 0
-      // }).catch(() => {})
+    showQrcode(id) {
+      this.bikeInfo = this.list.find(item => item.id === id)
+      this.isShowQrcode = true
     },
-    checkStatus(statusType) {
-      return statusType === 1
+    showModal(id = '') {
+      if (id) {
+        this.bikeInfo = this.list.find(item => item.id === id)
+      }
+      this.isShowModal = true
+    },
+    hideModal() {
+      this.bikeInfo = {}
+      this.isShowModal = false
     }
   }
 }
