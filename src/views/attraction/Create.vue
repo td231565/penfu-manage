@@ -87,6 +87,8 @@ export default {
     const checkArrayHasContent = (rule, value, callback) => {
       if (value.length === 0) {
         return callback(new Error('請上傳圖片'))
+      } else {
+        callback()
       }
     }
     return {

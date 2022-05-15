@@ -90,8 +90,11 @@ export default {
   components: { Editor, ImageUpload },
   data() {
     const checkArrayHasContent = (rule, value, callback) => {
+      console.log(value)
       if (value.length === 0) {
         return callback(new Error('請上傳圖片'))
+      } else {
+        callback()
       }
     }
     return {
