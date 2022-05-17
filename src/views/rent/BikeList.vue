@@ -124,6 +124,7 @@
 </template>
 
 <script>
+import { mapGetters, mapMutations } from 'vuex'
 import VueQrcode from '@chenfengyuan/vue-qrcode'
 import { getBikeList, getLocateList, postCreateNewBike, patchBike, deleteBike } from '@/api/rent'
 
@@ -157,6 +158,7 @@ export default {
     }
   },
   computed: {
+    ...mapGetters(['bikePage']),
     isIndeterminate() {
       return this.list.some(({ isCheck }) => isCheck) && !this.isCheckAll
     },
@@ -165,10 +167,16 @@ export default {
     }
   },
   created() {
-    this.fetchData(1, 10)
+    this.page = JSON.parse(JSON.stringify(this.bikePage))
+    const { current, size } = this.page
+    this.fetchData(current, size)
     this.getAllLocates()
   },
+  beforeDestroy() {
+    this.SET_BIKE_PAGE(this.page)
+  },
   methods: {
+    ...mapMutations('lists', ['SET_BIKE_PAGE']),
     fetchData(page, size) {
       this.listLoading = true
       getBikeList(page, size).then(data => {

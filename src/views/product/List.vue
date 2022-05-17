@@ -11,8 +11,8 @@
           </el-form-item>
           <el-form-item label="類別">
             <el-select v-model="queryData.category" placeholder="請選擇類別">
-              <el-option label="票券" :value="1" />
-              <el-option label="伴手禮" :value="2" />
+              <el-option label="票券" value="票券" />
+              <el-option label="伴手禮" value="伴手禮" />
             </el-select>
           </el-form-item>
         </div>
@@ -121,6 +121,7 @@
 </template>
 
 <script>
+import { mapGetters, mapMutations } from 'vuex'
 import { getList, deleteItems, patchDetail } from '@/api/product'
 
 export default {
@@ -144,6 +145,7 @@ export default {
     }
   },
   computed: {
+    ...mapGetters(['productPage', 'productQuery']),
     isIndeterminate() {
       return this.list.some(({ isCheck }) => isCheck) && !this.isCheckAll
     },
@@ -152,9 +154,17 @@ export default {
     }
   },
   created() {
-    this.fetchData(1, 10)
+    this.page = JSON.parse(JSON.stringify(this.productPage))
+    this.queryData = JSON.parse(JSON.stringify(this.productQuery))
+    const { current, size } = this.page
+    this.fetchData(current, size)
+  },
+  beforeDestroy() {
+    this.SET_PRODUCT_PAGE(this.page)
+    this.SET_PRODUCT_QUERY(this.queryData)
   },
   methods: {
+    ...mapMutations('lists', ['SET_PRODUCT_PAGE', 'SET_PRODUCT_QUERY']),
     fetchData(page, numberPerPage) {
       this.listLoading = true
       getList(page, numberPerPage, this.queryData).then(data => {

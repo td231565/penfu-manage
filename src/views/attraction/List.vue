@@ -105,6 +105,7 @@
 
 <script>
 import { getList, deleteItems, patchDetail } from '@/api/attraction'
+import { mapGetters, mapMutations } from 'vuex'
 
 export default {
   name: 'AttractionList',
@@ -126,6 +127,7 @@ export default {
     }
   },
   computed: {
+    ...mapGetters(['attractionPage', 'attractionQuery']),
     isIndeterminate() {
       return this.list.some(({ isCheck }) => isCheck) && !this.isCheckAll
     },
@@ -134,9 +136,17 @@ export default {
     }
   },
   created() {
-    this.fetchData(1, 10)
+    this.page = JSON.parse(JSON.stringify(this.attractionPage))
+    this.queryData = JSON.parse(JSON.stringify(this.attractionQuery))
+    const { current, size } = this.page
+    this.fetchData(current, size)
+  },
+  beforeDestroy() {
+    this.SET_ATTRACTION_PAGE(this.page)
+    this.SET_ATTRACTION_QUERY(this.queryData)
   },
   methods: {
+    ...mapMutations('lists', ['SET_ATTRACTION_PAGE', 'SET_ATTRACTION_QUERY']),
     fetchData(page, numberPerPage) {
       this.listLoading = true
       getList(page, numberPerPage, this.queryData).then(data => {

@@ -109,6 +109,7 @@
 </template>
 
 <script>
+import { mapGetters, mapMutations } from 'vuex'
 import { getList } from '@/api/member'
 
 export default {
@@ -134,6 +135,7 @@ export default {
     }
   },
   computed: {
+    ...mapGetters(['storePage', 'storeQuery']),
     isIndeterminate() {
       return this.list.some(({ isCheck }) => isCheck) && !this.isCheckAll
     },
@@ -142,9 +144,17 @@ export default {
     }
   },
   created() {
-    this.fetchData(1, 10)
+    this.page = JSON.parse(JSON.stringify(this.storePage))
+    this.queryData = JSON.parse(JSON.stringify(this.storeQuery))
+    const { current, size } = this.page
+    this.fetchData(current, size)
+  },
+  beforeDestroy() {
+    this.SET_STORE_PAGE(this.page)
+    this.SET_STORE_QUERY(this.queryData)
   },
   methods: {
+    ...mapMutations('lists', ['SET_STORE_PAGE', 'SET_STORE_QUERY']),
     fetchData(page, numberPerPage) {
       this.listLoading = true
       getList(page, numberPerPage, this.queryData).then(data => {

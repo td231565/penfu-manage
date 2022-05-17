@@ -13,13 +13,13 @@
               </el-form-item>
             </div>
             <div class="d-flex justify-content-between">
-              <el-form-item label="會員類型">
+              <!-- <el-form-item label="會員類型">
                 <el-select v-model="queryData.userCategory" placeholder="請選擇會員狀態">
                   <el-option label="全部" value="" />
                   <el-option label="會員" value="會員" />
                   <el-option label="店家" value="店家" />
                 </el-select>
-              </el-form-item>
+              </el-form-item> -->
               <el-form-item label="email">
                 <el-input v-model="queryData.email" placeholder="請輸入 email" />
               </el-form-item>
@@ -112,6 +112,7 @@
 
 <script>
 import { getList } from '@/api/member'
+import { mapGetters, mapMutations } from 'vuex'
 
 export default {
   name: 'MemberList',
@@ -134,6 +135,7 @@ export default {
     }
   },
   computed: {
+    ...mapGetters(['memberPage', 'memberQuery']),
     isIndeterminate() {
       return this.list.some(({ isCheck }) => isCheck) && !this.isCheckAll
     },
@@ -142,9 +144,17 @@ export default {
     }
   },
   created() {
-    this.fetchData(1, 10)
+    this.page = JSON.parse(JSON.stringify(this.memberPage))
+    this.queryData = JSON.parse(JSON.stringify(this.memberQuery))
+    const { current, size } = this.page
+    this.fetchData(current, size)
+  },
+  beforeDestroy() {
+    this.SET_MEMBER_PAGE(this.page)
+    this.SET_MEMBER_QUERY(this.queryData)
   },
   methods: {
+    ...mapMutations('lists', ['SET_MEMBER_PAGE', 'SET_MEMBER_QUERY']),
     fetchData(page, numberPerPage) {
       this.listLoading = true
       getList(page, numberPerPage, this.queryData).then(data => {

@@ -133,6 +133,7 @@
 
 <script>
 import { getList, getDetail } from '@/api/order'
+import { mapGetters, mapMutations } from 'vuex'
 
 export default {
   name: 'ProductList',
@@ -160,10 +161,21 @@ export default {
       }
     }
   },
+  computed: {
+    ...mapGetters(['orderPage', 'orderQuery'])
+  },
   created() {
-    this.fetchData(1, 10)
+    this.page = JSON.parse(JSON.stringify(this.orderPage))
+    this.queryData = JSON.parse(JSON.stringify(this.orderQuery))
+    const { current, size } = this.page
+    this.fetchData(current, size)
+  },
+  beforeDestroy() {
+    this.SET_ORDER_PAGE(this.page)
+    this.SET_ORDER_QUERY(this.queryData)
   },
   methods: {
+    ...mapMutations('lists', ['SET_ORDER_PAGE', 'SET_ORDER_QUERY']),
     fetchData(page, numberPerPage) {
       this.listLoading = true
       getList(page, numberPerPage, this.queryData).then(data => {

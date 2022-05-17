@@ -94,6 +94,7 @@
 </template>
 
 <script>
+import { mapGetters, mapMutations } from 'vuex'
 import { getRentList, postReturnBike } from '@/api/rent'
 
 export default {
@@ -114,10 +115,21 @@ export default {
       }
     }
   },
+  computed: {
+    ...mapGetters(['rentPage', 'rentQuery'])
+  },
   created() {
-    this.fetchData(1, 10)
+    this.page = JSON.parse(JSON.stringify(this.rentPage))
+    this.queryData = JSON.parse(JSON.stringify(this.rentQuery))
+    const { current, size } = this.page
+    this.fetchData(current, size)
+  },
+  beforeDestroy() {
+    this.SET_RENT_PAGE(this.page)
+    this.SET_RENT_QUERY(this.queryData)
   },
   methods: {
+    ...mapMutations('lists', ['SET_RENT_PAGE', 'SET_RENT_QUERY']),
     fetchData(page, numberPerPage) {
       this.listLoading = true
       getRentList(page, numberPerPage, this.queryData).then(data => {
