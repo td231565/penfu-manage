@@ -72,7 +72,40 @@
           <el-input v-model="locateInfo.title" placeholder="請輸入名稱" />
         </el-form-item>
         <el-form-item label="地點地址" prop="address">
-          <el-input v-model="locateInfo.address" placeholder="請輸入地址" />
+          <el-input v-model="locateInfo.address" placeholder="請輸入地址" @blur="getLatLngByQuery" />
+        </el-form-item>
+        <el-form-item label="">
+          <el-col :span="2" class="text-center">
+            <span>Lat</span>
+          </el-col>
+          <el-col :span="10">
+            <el-form-item prop="lat">
+              <el-input v-model="locateInfo.lat" placeholder="請輸入緯度" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="2" class="text-center">
+            <span>Lng</span>
+          </el-col>
+          <el-col :span="10">
+            <el-form-item prop="lng">
+              <el-input v-model="locateInfo.lng" placeholder="請輸入經度" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="24" class="mt-3">
+            <GmapMap
+              :center="mapCenter"
+              :zoom="14"
+              map-type-id="terrain"
+              style="width: 500px; height: 300px"
+            >
+              <GmapMarker
+                :position="mapCenter"
+                :clickable="true"
+                :draggable="true"
+                @dragend="setLatLng"
+              />
+            </GmapMap>
+          </el-col>
         </el-form-item>
       </el-form>
       <span slot="footer" class="dialog-footer">
@@ -96,15 +129,23 @@ export default {
       isLoading: false,
       isCheckAll: false,
       isShowModal: false,
-      locateInfo: {},
+      locateInfo: {
+        address: '',
+        lat: 22.445759,
+        lng: 120.473509
+      },
       formRules: {
         title: [
           { required: true, message: '請輸入名稱', trigger: 'blur' }
         ],
-        address: [
+        lat: [
+          { required: true, message: '請輸入地址', trigger: 'blur' }
+        ],
+        lng: [
           { required: true, message: '請輸入地址', trigger: 'blur' }
         ]
-      }
+      },
+      google: gmapApi
     }
   },
   computed: {
@@ -113,6 +154,17 @@ export default {
     },
     checkedIdList() {
       return this.list.filter(({ isCheck }) => isCheck).map(({ id }) => id)
+    },
+    mapCenter: {
+      get() {
+        const { lat, lng } = this.locateInfo
+        return { lat: Number(lat), lng: Number(lng) }
+      },
+      set(val) {
+        const { lat, lng } = val
+        this.locateInfo.lat = lat
+        this.locateInfo.lng = lng
+      }
     }
   },
   created() {
@@ -132,14 +184,22 @@ export default {
         this.listLoading = false
       })
     },
-    updateLocate(type) {
+    updateLocate() {
       this.isLoading = true
-      const updateApi = type === 'create' ? postCreateNewLocate : patchLocate
+      const isCreate = !this.locateInfo.id
+      const { lat, lng } = this.locateInfo
+      this.locateInfo.lat = lat.toString()
+      this.locateInfo.lng = lng.toString()
+      const updateApi = isCreate ? postCreateNewLocate : patchLocate
       updateApi(this.locateInfo).then(data => {
         this.isShowModal = false
-        this.locateInfo = {}
+        this.locateInfo = {
+          address: '',
+          lat: 22.445759,
+          lng: 120.473509
+        }
         this.isLoading = false
-        const action = type === 'create' ? '新增' : '編輯'
+        const action = isCreate ? '新增' : '編輯'
         this.$message({ type: 'success', message: `${action}地點成功` })
         this.fetchData()
       }).catch(err => {
@@ -147,21 +207,24 @@ export default {
         this.isLoading = false
       })
     },
-    getLatLngByQuery(type) {
-      this.isLoading = true
+    getLatLngByQuery(str) {
+      if (!str) { return }
       const google = gmapApi()
       const geocoder = new google.maps.Geocoder()
-      geocoder.geocode({ 'address': this.locateInfo.address }, (res, status) => {
+      geocoder.geocode({ 'address': str }, (res, status) => {
         if (status === 'OK') {
           const { lat, lng } = res[0].geometry.location
-          this.locateInfo.lat = lat().toString()
-          this.locateInfo.lng = lng().toString()
-          this.updateLocate(type)
+          this.locateInfo.lat = lat()
+          this.locateInfo.lng = lng()
         } else {
           this.$message.error('無法辨識輸入的地址或關鍵字')
-          this.isLoading = false
         }
       })
+    },
+    setLatLng(e) {
+      const { lat, lng } = e.latLng
+      this.locateInfo.lat = lat()
+      this.locateInfo.lng = lng()
     },
     removeLocate(id) {
       this.listLoading = true
@@ -191,7 +254,7 @@ export default {
     confirmModal() {
       this.$refs.form.validate(valid => {
         if (valid) {
-          this.getLatLngByQuery(this.locateInfo.id ? 'update' : 'create')
+          this.updateLocate()
         } else {
           this.$message.error('請確認必填欄位輸入完整')
           return false
@@ -205,7 +268,11 @@ export default {
       this.isShowModal = true
     },
     hideModal() {
-      this.locateInfo = {}
+      this.locateInfo = {
+        address: '',
+        lat: 22.445759,
+        lng: 120.473509
+      }
       this.isShowModal = false
     }
   }

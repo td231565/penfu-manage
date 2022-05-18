@@ -210,7 +210,8 @@ export default {
         this.isLoading = false
         const action = type === 'create' ? '新增' : '編輯'
         this.$message({ type: 'success', message: `${action}成功` })
-        this.fetchData()
+        const { current, size } = this.page
+        this.fetchData(current, size)
       }).catch(err => {
         console.log(err)
         this.isLoading = false
@@ -220,9 +221,13 @@ export default {
       this.listLoading = true
       deleteBike(id).then(data => {
         this.$message({ type: 'success', message: '刪除車輛成功' })
-        this.fetchData()
+        const { current, size } = this.page
+        this.fetchData(current, size)
       }).catch(err => {
         console.log(err)
+        if (err.response.data.status === 99) {
+          this.$message.error('車子正被租借中，不可刪除')
+        }
         this.listLoading = false
       })
     },

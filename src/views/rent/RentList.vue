@@ -42,6 +42,11 @@
             <el-checkbox v-model="scope.row.isCheck" />
           </template>
         </el-table-column> -->
+        <el-table-column label="租車 ID" align="center">
+          <template slot-scope="scope">
+            {{ scope.row.orderID }}
+          </template>
+        </el-table-column>
         <el-table-column label="車輛 ID" align="center">
           <template slot-scope="scope">
             {{ scope.row.id }}
@@ -71,7 +76,7 @@
         <el-table-column label="操作" width="75" align="center">
           <template slot-scope="scope">
             <el-tooltip class="item" effect="dark" content="歸還" placement="top">
-              <el-button type="text" size="large" :disabled="Number(scope.row.status) === 1" @click="returnBike(scope.row.id, Number(scope.row.status) === 1)">
+              <el-button type="text" size="large" :disabled="Number(scope.row.status) === 1" @click="returnBike(scope.row.orderID, Number(scope.row.status) === 1)">
                 <i class="el-icon-refresh-left" />
               </el-button>
             </el-tooltip>
@@ -141,7 +146,8 @@ export default {
         console.log(err)
       })
     },
-    returnBike(id, isReturned) {
+    returnBike(orderId, isReturned) {
+      console.log(orderId)
       if (isReturned) { return }
       this.$confirm('確定歸還此車輛嗎？', 'Warning', {
         confirmButtonText: '確定',
@@ -149,9 +155,11 @@ export default {
         type: 'warning'
       }).then(() => {
         this.listLoading = true
-        postReturnBike(id).then(() => {
-          this.$message({ type: 'success', message: '歸還成功' })
+        postReturnBike(orderId).then(() => {
+          const { current, size } = this.page
+          this.fetchData(current, size)
           this.listLoading = false
+          this.$message({ type: 'success', message: '歸還成功' })
         }).catch(() => {
           this.listLoading = false
         })
