@@ -31,7 +31,7 @@ export default {
           'insertdatetime media table paste code help wordcount'
         ],
         toolbar:
-          'undo redo | formatselect | bold italic forecolor backcolor | \
+          'undo redo | fontselect fontsizeselect formatselect | bold italic forecolor backcolor | \
           alignleft aligncenter alignright alignjustify | image | \
           bullist numlist outdent indent | removeformat | code',
         images_upload_handler: this.uploadImage
