@@ -18,14 +18,24 @@
             <el-checkbox v-model="scope.row.isCheck" />
           </template>
         </el-table-column> -->
-        <el-table-column align="center" label="車輛 ID" width="80">
+        <el-table-column label="車輛 ID" width="80" align="center">
           <template slot-scope="scope">
             {{ scope.row.id }}
+          </template>
+        </el-table-column>
+        <el-table-column label="出租 ID" width="80" align="center">
+          <template slot-scope="scope">
+            {{ scope.row.orderID }}
           </template>
         </el-table-column>
         <el-table-column label="車輛名稱" align="center">
           <template slot-scope="scope">
             {{ scope.row.title }}
+          </template>
+        </el-table-column>
+        <el-table-column label="車種" align="center">
+          <template slot-scope="scope">
+            {{ scope.row.category }}
           </template>
         </el-table-column>
         <el-table-column label="當前位置" align="center">
@@ -44,7 +54,7 @@
             <span>{{ showDate(scope.row.update_time) }}</span>
           </template>
         </el-table-column> -->
-        <el-table-column label="操作" width="120" align="center">
+        <el-table-column label="操作" width="150" align="center">
           <template slot-scope="scope">
             <el-tooltip class="item" effect="dark" content="編輯" placement="top">
               <el-button type="text" size="large" @click="showModal(scope.row.id)">
@@ -61,6 +71,16 @@
                 <span class="material-symbols-outlined" style="font-size: 14px;">
                   qr_code
                 </span>
+              </el-button>
+            </el-tooltip>
+            <el-tooltip class="item" effect="dark" content="查看合約" placement="top">
+              <el-button type="text" size="large" @click="showContract(scope.row.id)">
+                <i class="el-icon-s-order" />
+              </el-button>
+            </el-tooltip>
+            <el-tooltip class="item" effect="dark" content="歸還" placement="top">
+              <el-button type="text" size="large" :disabled="Number(scope.row.status) === 1" @click="returnBike(scope.row.orderID, Number(scope.row.status) === 1)">
+                <i class="el-icon-refresh-left" />
               </el-button>
             </el-tooltip>
           </template>
@@ -102,6 +122,11 @@
             <el-option v-for="item in locates" :key="item.id" :label="item.title" :value="item.title" />
           </el-select>
         </el-form-item>
+        <el-form-item label="車輛類型" prop="category">
+          <el-select v-model="bikeInfo.category" placeholder="請選擇">
+            <el-option v-for="item in bikeCategories" :key="item.id" :label="item.title" :value="item.title" />
+          </el-select>
+        </el-form-item>
       </el-form>
       <span slot="footer" class="dialog-footer">
         <el-button @click="hideModal">取消</el-button>
@@ -120,13 +145,25 @@
       </div>
       <p class="text-center">請右鍵點擊下載</p>
     </el-dialog>
+    <!-- Contract Modal -->
+    <el-dialog
+      :title="bikeInfo.title"
+      :visible.sync="isShowContract"
+      width="70%"
+      top="15px"
+      :close-on-click-modal="false"
+    >
+      <div class="d-flex justify-content-center">
+        <img :src="bikeInfo.contractImage" alt="">
+      </div>
+    </el-dialog>
   </div>
 </template>
 
 <script>
 import { mapGetters, mapMutations } from 'vuex'
 import VueQrcode from '@chenfengyuan/vue-qrcode'
-import { getBikeList, getLocateList, postCreateNewBike, patchBike, deleteBike } from '@/api/rent'
+import { getBikeList, getLocateList, postCreateNewBike, patchBike, deleteBike, postReturnBike } from '@/api/rent'
 
 export default {
   name: 'BikeList',
@@ -135,12 +172,18 @@ export default {
     return {
       list: [],
       locates: [],
+      bikeCategories: [
+        { id: 1, title: '自行車' },
+        { id: 2, title: '親子車' },
+        { id: 3, title: '電動車' }
+      ],
       listLoading: true,
       isLoading: false,
       isCheckAll: false,
       isShowModal: false,
       bikeInfo: {},
       isShowQrcode: false,
+      isShowContract: false,
       qrOptions: { width: 160, margin: 0, scale: 4 },
       formRules: {
         title: [
@@ -148,6 +191,9 @@ export default {
         ],
         lastLocate: [
           { required: true, message: '請輸入地址', trigger: 'blur' }
+        ],
+        category: [
+          { required: true, message: '請選擇', trigger: 'blur' }
         ]
       },
       page: {
@@ -217,6 +263,24 @@ export default {
         this.isLoading = false
       })
     },
+    returnBike(orderId, isReturned) {
+      if (isReturned) { return }
+      this.$confirm('確定歸還此車輛嗎？', 'Warning', {
+        confirmButtonText: '確定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.listLoading = true
+        postReturnBike(orderId).then(() => {
+          const { current, size } = this.page
+          this.fetchData(current, size)
+          this.listLoading = false
+          this.$message({ type: 'success', message: '歸還成功' })
+        }).catch(() => {
+          this.listLoading = false
+        })
+      })
+    },
     removeBike(id) {
       this.listLoading = true
       deleteBike(id).then(data => {
@@ -259,6 +323,10 @@ export default {
     showQrcode(id) {
       this.bikeInfo = this.list.find(item => item.id === id)
       this.isShowQrcode = true
+    },
+    showContract(id) {
+      this.bikeInfo = this.list.find(item => item.id === id)
+      this.isShowContract = true
     },
     showModal(id = '') {
       if (id) {

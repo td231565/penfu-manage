@@ -3,17 +3,17 @@
     <el-card class="w-100 rouned-3 mb-3">
       <el-form inline :model="queryData">
         <div class="d-flex">
-          <el-form-item label="車輛 ID">
-            <el-input v-model="queryData.carID" placeholder="請輸入車輛 id" />
+          <el-form-item label="出租 ID">
+            <el-input v-model="queryData.orderID" placeholder="請輸入出租 id" />
           </el-form-item>
-          <el-form-item label="名稱">
-            <el-input v-model="queryData.carName" placeholder="請輸入車輛名稱" />
+          <el-form-item label="手機">
+            <el-input v-model="queryData.phoneNumber" placeholder="請輸入手機" />
           </el-form-item>
           <el-form-item label="租借狀態">
             <el-select v-model="queryData.status" placeholder="請選擇類別">
               <el-option label="全部" value="" />
-              <el-option label="空閒中" :value="1" />
-              <el-option label="租借中" :value="2" />
+              <el-option label="租借中" :value="1" />
+              <el-option label="已歸還" :value="2" />
             </el-select>
           </el-form-item>
         </div>
@@ -49,35 +49,40 @@
         </el-table-column>
         <el-table-column label="車輛 ID" align="center">
           <template slot-scope="scope">
-            {{ scope.row.id }}
+            {{ scope.row.carID }}
           </template>
         </el-table-column>
-        <el-table-column label="車輛名稱" align="center">
+        <el-table-column label="租借人手機" align="center">
           <template slot-scope="scope">
-            {{ scope.row.title }}
+            {{ scope.row.phoneNumber }}
           </template>
         </el-table-column>
-        <el-table-column label="當前位置" align="center">
+        <el-table-column label="租借人名稱" align="center">
           <template slot-scope="scope">
-            {{ scope.row.lastLocate }}
+            {{ scope.row.name }}
           </template>
         </el-table-column>
         <el-table-column label="租借狀況" align="center">
           <template slot-scope="scope">
-            {{ Number(scope.row.status) === 1 ? '空閒中' : '租借中' }}
+            {{ Number(scope.row.status) === 1 ? '租借中' : '已歸還' }}
           </template>
         </el-table-column>
-        <el-table-column align="center" prop="updated_at" label="更新時間" width="170">
+        <el-table-column label="出租時間" width="170" align="center">
           <template slot-scope="scope">
             <i class="el-icon-time" />
-            <span>{{ showDate(scope.row.updateTime) }}</span>
+            <span>{{ showDate(scope.row.rentTime) }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="75" align="center">
+        <el-table-column label="操作" width="100" align="center">
           <template slot-scope="scope">
             <el-tooltip class="item" effect="dark" content="歸還" placement="top">
               <el-button type="text" size="large" :disabled="Number(scope.row.status) === 1" @click="returnBike(scope.row.orderID, Number(scope.row.status) === 1)">
                 <i class="el-icon-refresh-left" />
+              </el-button>
+            </el-tooltip>
+            <el-tooltip class="item" effect="dark" content="查看合約" placement="top">
+              <el-button type="text" size="large" @click="showContract(scope.row.contractImage)">
+                <i class="el-icon-s-order" />
               </el-button>
             </el-tooltip>
           </template>
@@ -95,6 +100,17 @@
         />
       </div>
     </el-card>
+    <!-- Contract Modal -->
+    <el-dialog
+      :visible.sync="isShowContract"
+      width="70%"
+      top="15px"
+      :close-on-click-modal="false"
+    >
+      <div class="d-flex justify-content-center">
+        <img :src="contractImageUrl" alt="">
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -108,6 +124,8 @@ export default {
     return {
       list: [],
       listLoading: true,
+      isShowContract: false,
+      contractImageUrl: '',
       page: {
         current: 1,
         size: 10,
@@ -115,8 +133,8 @@ export default {
       },
       queryData: {
         status: '',
-        carName: '',
-        carID: ''
+        phoneNumber: '',
+        orderID: ''
       }
     }
   },
@@ -147,7 +165,6 @@ export default {
       })
     },
     returnBike(orderId, isReturned) {
-      console.log(orderId)
       if (isReturned) { return }
       this.$confirm('確定歸還此車輛嗎？', 'Warning', {
         confirmButtonText: '確定',
@@ -167,6 +184,10 @@ export default {
     },
     showDate(date) {
       return date.replace('T', ' ').slice(0, -3)
+    },
+    showContract(url) {
+      this.contractImageUrl = url
+      this.isShowContract = true
     }
   }
 }
