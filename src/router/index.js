@@ -136,17 +136,34 @@ export const constantRoutes = [
   },
 
   {
-    path: '/order',
+    path: '/sale',
     component: Layout,
-    redirect: '/order/list',
-    name: 'order',
+    redirect: '/sale/list',
+    name: 'sale',
     meta: { title: '銷售管理', icon: 'el-icon-s-help' },
     children: [
       {
         path: 'list',
-        name: 'OrderList',
-        component: () => import('@/views/order/List'),
+        name: 'saleList',
+        component: () => import('@/views/sale/List'),
         meta: { title: '銷售列表', icon: 'table' },
+        hidden: true
+      }
+    ]
+  },
+
+  {
+    path: '/order',
+    component: Layout,
+    redirect: '/order/list',
+    name: 'order',
+    meta: { title: '訂單管理', icon: 'el-icon-s-help' },
+    children: [
+      {
+        path: 'list',
+        name: 'orderList',
+        component: () => import('@/views/order/List'),
+        meta: { title: '訂單列表', icon: 'table' },
         hidden: true
       }
     ]

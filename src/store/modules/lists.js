@@ -26,7 +26,7 @@ export default {
         userCategory: '會員'
       }
     },
-    order: {
+    sale: {
       page: {
         current: 1,
         size: 10,
@@ -38,6 +38,19 @@ export default {
         category: '',
         startDate: '',
         endDate: ''
+      }
+    },
+    order: {
+      page: {
+        current: 1,
+        size: 10,
+        total: 0
+      },
+      query: {
+        status: '',
+        title: '',
+        phoneNumber: '',
+        orderID: ''
       }
     },
     product: {
@@ -101,8 +114,11 @@ export default {
     SET_MEMBER_QUERY(state, payload) {
       state.member.query = payload
     },
-    SET_ORDER_PAGE(state, payload) {
-      state.order.page = payload
+    SET_SALE_PAGE(state, payload) {
+      state.sale.page = payload
+    },
+    SET_SALE_QUERY(state, payload) {
+      state.sale.query = payload
     },
     SET_ORDER_QUERY(state, payload) {
       state.order.query = payload
