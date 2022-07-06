@@ -35,7 +35,7 @@
         </el-table-column>
         <el-table-column label="車種" align="center">
           <template slot-scope="scope">
-            {{ scope.row.category }}
+            {{ bikeCategories.find(({id}) => scope.row.category === id).title }}
           </template>
         </el-table-column>
         <el-table-column label="當前位置" align="center">
@@ -124,7 +124,7 @@
         </el-form-item>
         <el-form-item label="車輛類型" prop="category">
           <el-select v-model="bikeInfo.category" placeholder="請選擇">
-            <el-option v-for="item in bikeCategories" :key="item.id" :label="item.title" :value="item.title" />
+            <el-option v-for="item in bikeCategories" :key="item.id" :label="item.title" :value="item.id" />
           </el-select>
         </el-form-item>
       </el-form>
@@ -173,9 +173,9 @@ export default {
       list: [],
       locates: [],
       bikeCategories: [
-        { id: 1, title: '自行車' },
-        { id: 2, title: '親子車' },
-        { id: 3, title: '電動車' }
+        { id: '1', title: '自行車' },
+        { id: '2', title: '親子車' },
+        { id: '3', title: '電動車' }
       ],
       listLoading: true,
       isLoading: false,
@@ -251,6 +251,7 @@ export default {
     updateBike(type) {
       this.isLoading = true
       const updateApi = type === 'create' ? postCreateNewBike : patchBike
+      console.log(this.bikeInfo)
       updateApi(this.bikeInfo).then(data => {
         this.isShowModal = false
         this.isLoading = false

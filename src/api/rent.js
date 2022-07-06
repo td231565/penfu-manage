@@ -38,25 +38,25 @@ export function postReturnBike(orderID) {
   })
 }
 
-export function postCreateNewBike({ title, lastLocate }) {
+export function postCreateNewBike(postData) {
   return request({
     url: `car/`,
     method: 'post',
     data: {
-      title,
-      lastLocate,
+      ...postData,
       status: 1
     }
   })
 }
 
-export function patchBike({ id, title, lastLocate, status }) {
+export function patchBike({ id, title, lastLocate, status, category }) {
   return request({
     url: `car/${id}`,
     method: 'patch',
     data: {
       title,
       lastLocate,
+      category,
       status
     }
   })
