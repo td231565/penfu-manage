@@ -192,7 +192,7 @@ export default {
       this.locateInfo.lng = lng.toString()
       const updateApi = isCreate ? postCreateNewLocate : patchLocate
       updateApi(this.locateInfo).then(data => {
-        this.isShowModal = false
+        this.hideModal()
         this.locateInfo = {
           address: '',
           lat: 22.445759,
