@@ -76,7 +76,7 @@
         <el-table-column label="操作" width="100" align="center">
           <template slot-scope="scope">
             <el-tooltip class="item" effect="dark" content="歸還" placement="top">
-              <el-button type="text" size="large" :disabled="Number(scope.row.status) === 1" @click="returnBike(scope.row.orderID, Number(scope.row.status) === 1)">
+              <el-button type="text" size="large" :disabled="Number(scope.row.status) === 2" @click="returnBike(scope.row.orderID, Number(scope.row.status) === 1)">
                 <i class="el-icon-refresh-left" />
               </el-button>
             </el-tooltip>

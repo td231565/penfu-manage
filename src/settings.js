@@ -1,6 +1,6 @@
 module.exports = {
 
-  title: 'Penfu-Management',
+  title: 'Pengfu-Management',
 
   /**
    * @type {boolean} true | false

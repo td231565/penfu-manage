@@ -251,9 +251,8 @@ export default {
     updateBike(type) {
       this.isLoading = true
       const updateApi = type === 'create' ? postCreateNewBike : patchBike
-      console.log(this.bikeInfo)
       updateApi(this.bikeInfo).then(data => {
-        this.isShowModal = false
+        this.hideModal()
         this.isLoading = false
         const action = type === 'create' ? '新增' : '編輯'
         this.$message({ type: 'success', message: `${action}成功` })
@@ -331,7 +330,8 @@ export default {
     },
     showModal(id = '') {
       if (id) {
-        this.bikeInfo = this.list.find(item => item.id === id)
+        const bike = this.list.find(item => item.id === id)
+        this.bikeInfo = JSON.parse(JSON.stringify(bike))
       }
       this.isShowModal = true
     },
