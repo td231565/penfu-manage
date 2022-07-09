@@ -75,11 +75,16 @@
             </el-tooltip>
           </template>
         </el-table-column> -->
-        <el-table-column label="操作" width="60">
+        <el-table-column label="操作" width="80" align="center">
           <template slot-scope="scope">
             <el-tooltip class="item" effect="dark" content="編輯" placement="top">
               <el-button type="text" size="large" @click="gotoEditPage(scope.row.id)">
                 <i class="el-icon-edit" />
+              </el-button>
+            </el-tooltip>
+            <el-tooltip class="item" effect="dark" content="刪除" placement="top">
+              <el-button type="text" size="large" @click="showDisableConfirm(scope.row.id)">
+                <i class="el-icon-delete" />
               </el-button>
             </el-tooltip>
           </template>
@@ -110,7 +115,7 @@
 
 <script>
 import { mapGetters, mapMutations } from 'vuex'
-import { getList } from '@/api/member'
+import { getList, deleteStore } from '@/api/member'
 
 export default {
   name: 'StoreList',
@@ -181,30 +186,30 @@ export default {
     checkOneRow(status) {
       this.isCheckAll = status && this.list.every(({ isCheck }) => isCheck)
     },
-    // showDisableConfirm(ids) {
-    //   this.$confirm('確定要刪除選擇的景點嗎？', 'Warning', {
-    //     confirmButtonText: '確定',
-    //     cancelButtonText: '取消',
-    //     type: 'warning'
-    //   }).then(() => {
-    //     this.listLoading = true
-    //     deleteItems(ids).then(() => {
-    //       this.$message({ type: 'success', message: '刪除成功' })
-    //       const { current, size, total } = this.page
-    //       if (current === 1) {
-    //         this.fetchData(1, size)
-    //       } else if ((total - ids.length) / size === current - 1 && current !== 1) {
-    //         // 如果分頁內只有一筆，是目前的最後一頁且不是第一頁，就拿上一頁的資料
-    //         this.fetchData(current - 1, size)
-    //       } else {
-    //         this.fetchData(current, size)
-    //       }
-    //       this.listLoading = false
-    //     })
-    //   }).catch(() => {
-    //     this.listLoading = false
-    //   })
-    // },
+    showDisableConfirm(id) {
+      this.$confirm('確定要刪除選擇的店家嗎？', 'Warning', {
+        confirmButtonText: '確定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.listLoading = true
+        deleteStore(id).then(() => {
+          this.$message({ type: 'success', message: '刪除成功' })
+          const { current, size, total } = this.page
+          if (current === 1) {
+            this.fetchData(1, size)
+          } else if ((total - 1) / size === current - 1 && current !== 1) {
+            // 如果分頁內只有一筆，是目前的最後一頁且不是第一頁，就拿上一頁的資料
+            this.fetchData(current - 1, size)
+          } else {
+            this.fetchData(current, size)
+          }
+          this.listLoading = false
+        })
+      }).catch(() => {
+        this.listLoading = false
+      })
+    },
     showDate(date) {
       return date.replace('T', ' ').slice(0, -3)
     },

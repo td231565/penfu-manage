@@ -11,3 +11,10 @@ export function getList(page, numberPerPage, queryData) {
     }
   })
 }
+
+export function deleteStore(id) {
+  return request({
+    url: `business_info/${id}`,
+    method: 'delete'
+  })
+}
