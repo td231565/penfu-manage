@@ -2,24 +2,24 @@
 
 ### Usage
 
-** Install **
+**Install**
 
 ```
 npm install
 ```
 
-** Develop **
+**Develop**
 
 ```
 npm run dev
 ```
 
-** Production **
+**Production**
 
 ```
 npm run build
 ```
 
-### 後臺資源
+### Template reference
 
 - vue-admin-template
